@@ -198,6 +198,25 @@ const handleMathFunctionClick = (funcStr: string): void => {
     }
 };
 
+/**
+ * Appends a mathematical constant (π, e) to the input area.
+ * Automatically inserts a multiplication sign if preceded by a digit, constant, factorial, percent, or closing parenthesis.
+ */
+const handleConstantClick = (constantStr: string): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that should trigger an automatic multiplication sign before a constant
+    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+
+    // If the preceding character is a digit or a specific constant/symbol, add '×'
+    if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
+        appendCharacterToInput('×' + constantStr);
+    } else {
+        appendCharacterToInput(constantStr);
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -262,5 +281,17 @@ Object.keys(mathFuncMap).forEach(id => {
     const btn = document.getElementById(id) as HTMLButtonElement;
     btn.addEventListener('click', () => {
         handleMathFunctionClick(mathFuncMap[id]);
+    });
+});
+
+// Attach click event listeners to the constant buttons
+const constantBtnMap: Record<string, string> = {
+    'btn-pi': 'π',
+    'btn-e': 'e'
+};
+Object.keys(constantBtnMap).forEach(id => {
+    const btn = document.getElementById(id) as HTMLButtonElement;
+    btn.addEventListener('click', () => {
+        handleConstantClick(constantBtnMap[id]);
     });
 });
