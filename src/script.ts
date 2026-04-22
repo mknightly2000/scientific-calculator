@@ -74,6 +74,28 @@ const handleDecimalClick = (): void => {
 };
 
 /**
+ * Appends an operator to the input if the preceding character is valid.
+ */
+const handleBasicOperatorClick = (operator: string): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that are allowed to precede a basic math operator
+    const validPrecedingChars = ['π', 'e', '!', '%', ')'];
+
+    // Exception: Allow a minus sign at the very beginning or after an opening parenthesis
+    if (operator === '-' && (!currentStr || lastChar === '(')) {
+        appendCharacterToInput(operator);
+        return;
+    }
+
+    // Only append the operator if the last character is a digit or in the valid list
+    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+        appendCharacterToInput(operator);
+    }
+};
+
+/**
  * Toggles the visibility of primary and secondary function buttons.
  * Since we have two buttons for each slot (one visible, one hidden),
  * we simply flip the 'hidden' class on all of them.
@@ -110,11 +132,23 @@ const numBtnMap: Record<string, string> = {
 };
 Object.keys(numBtnMap).forEach(id => {
     const btn = document.getElementById(id) as HTMLButtonElement;
-    if (btn) {
-        btn.addEventListener('click', () => {
+    btn.addEventListener('click', () => {
             appendCharacterToInput(numBtnMap[id]);
-        });
-    }
+    });
+});
+
+// Attach click event listeners to the operator buttons
+const basicOperatorBtnMap: Record<string, string> = {
+    'btn-plus': '+',
+    'btn-minus': '-',
+    'btn-times': '×',
+    'btn-divide': '÷'
+};
+Object.keys(basicOperatorBtnMap).forEach(id => {
+    const btn = document.getElementById(id) as HTMLButtonElement;
+    btn.addEventListener('click', () => {
+        handleBasicOperatorClick(basicOperatorBtnMap[id]);
+    });
 });
 
 
