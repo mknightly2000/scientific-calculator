@@ -89,6 +89,18 @@ const handleBasicOperatorClick = (operator: string): void => {
         return;
     }
 
+    // If the last character is already an operator, replace it
+    if (['+', '-', '×', '÷'].includes(lastChar)) {
+        // Prevent replacing a minus sign if it's the only character or follows an open parenthesis
+        if (lastChar === '-' && (currentStr.length === 1 || currentStr[currentStr.length - 2] === '(')) {
+            return;
+        }
+
+        inputTextArea.value = currentStr.slice(0, -1) + operator;
+        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        return;
+    }
+
     // Only append the operator if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
         appendCharacterToInput(operator);
