@@ -179,6 +179,25 @@ const handleAngleTypeClick = (): void => {
     }
 };
 
+/**
+ * Appends a math function to the input area.
+ * Automatically inserts a multiplication sign if preceded by a digit or constant.
+ */
+const handleMathFunctionClick = (funcStr: string): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that should trigger an automatic multiplication sign before a function
+    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+
+    // If the preceding character is a digit or a specific constant/symbol, add '×'
+    if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
+        appendCharacterToInput('×' + funcStr);
+    } else {
+        appendCharacterToInput(funcStr);
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -220,4 +239,28 @@ Object.keys(basicOperatorBtnMap).forEach(id => {
     });
 });
 
-
+// Attach click event listeners to the math function buttons
+const mathFuncMap: Record<string, string> = {
+    'btn-sin': 'sin(',
+    'btn-cos': 'cos(',
+    'btn-tan': 'tan(',
+    'btn-ln': 'ln(',
+    'btn-log': 'log(',
+    'btn-sinh': 'sinh(',
+    'btn-cosh': 'cosh(',
+    'btn-tanh': 'tanh(',
+    'btn-asin': 'asin(',
+    'btn-acos': 'acos(',
+    'btn-atan': 'atan(',
+    'btn-asinh': 'asinh(',
+    'btn-acosh': 'acosh(',
+    'btn-atanh': 'atanh(',
+    'btn-square-root': '√(',
+    'btn-abs': 'abs('
+};
+Object.keys(mathFuncMap).forEach(id => {
+    const btn = document.getElementById(id) as HTMLButtonElement;
+    btn.addEventListener('click', () => {
+        handleMathFunctionClick(mathFuncMap[id]);
+    });
+});
