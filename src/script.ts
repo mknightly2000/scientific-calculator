@@ -2,6 +2,9 @@ const isDigit = (char: string | undefined): boolean => {
     return char !== undefined && /[0-9]/.test(char);
 };
 
+/* State */
+let angleType: string = "deg"
+
 /* Areas */
 const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
 const outputResult = document.getElementById('output-result') as HTMLDivElement;
@@ -152,12 +155,37 @@ const toggleFunctions = (): void => {
     }
 };
 
+/**
+ * Cycles the angle type between Degrees, Radians, and Gradians.
+ * Updates both the active state display and the button text for the next state.
+ */
+const handleAngleTypeClick = (): void => {
+    if (!btnAngleType || !angleTypeSpan) return;
+
+    const currentBtnText = btnAngleType.innerText;
+
+    if (currentBtnText === 'Rad') {
+        angleType = 'rad'
+        angleTypeSpan.innerText = 'Rad';
+        btnAngleType.innerText = 'Grad';
+    } else if (currentBtnText === 'Grad') {
+        angleType = "grad"
+        angleTypeSpan.innerText = 'Grad';
+        btnAngleType.innerText = 'Deg';
+    } else if (currentBtnText === 'Deg') {
+        angleType = 'deg'
+        angleTypeSpan.innerText = 'Deg';
+        btnAngleType.innerText = 'Rad';
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
 btnMore.addEventListener('click', toggleFunctions);
 btnZero.addEventListener('click', handleZeroClick);
 btnDecimal.addEventListener('click', handleDecimalClick);
+btnAngleType.addEventListener('click', handleAngleTypeClick);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
