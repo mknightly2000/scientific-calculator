@@ -8,6 +8,7 @@ const inputTextArea = document.getElementById('output-operation-input') as HTMLT
 /* Buttons */
 const btnMore = document.getElementById('btn-more') as HTMLButtonElement;
 const btnZero = document.getElementById('btn-zero') as HTMLButtonElement;
+const btnDecimal = document.getElementById('btn-decimal') as HTMLButtonElement;
 const funcButtons = document.querySelectorAll('.func');
 
 /**
@@ -38,6 +39,41 @@ const handleZeroClick = (): void => {
 };
 
 /**
+ * Appends a decimal to the input, preventing multiple decimals in a single number.
+ */
+const handleDecimalClick = (): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Handle empty input case
+    if (!currentStr) {
+        appendCharacterToInput('0.');
+        return;
+    }
+
+    if (lastChar === '.') {
+        // Prevent consecutive decimals
+        return;
+    } else if (!isDigit(lastChar)) {
+        // If the last character is an operator or parenthesis, append '0.'
+        appendCharacterToInput('0.');
+    } else {
+        // Look backwards to see if the current number already has a decimal
+        for (let i = currentStr.length - 1; i >= 0; i--) {
+            const char = currentStr[i];
+
+            if (char === '.') {
+                return; // Decimal already exists in the current number
+            } else if (!isDigit(char)) {
+                break; // Reached an operator, meaning we are safe to add a decimal
+            }
+        }
+
+        appendCharacterToInput('.');
+    }
+};
+
+/**
  * Toggles the visibility of primary and secondary function buttons.
  * Since we have two buttons for each slot (one visible, one hidden),
  * we simply flip the 'hidden' class on all of them.
@@ -58,6 +94,7 @@ const toggleFunctions = (): void => {
 /* Event Listeners */
 btnMore.addEventListener('click', toggleFunctions);
 btnZero.addEventListener('click', handleZeroClick);
+btnDecimal.addEventListener('click', handleDecimalClick);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
