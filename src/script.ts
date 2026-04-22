@@ -1,8 +1,19 @@
-// Select the toggle button
-const btnMore = document.getElementById('btn-more') as HTMLButtonElement;
+const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
 
-// Select all function buttons
+/* Buttons */
+const btnMore = document.getElementById('btn-more') as HTMLButtonElement;
 const funcButtons = document.querySelectorAll('.func');
+
+/**
+ * Appends a character to the output operation text area.
+ */
+const appendCharacterToInput = (char: string): void => {
+    if (inputTextArea) {
+        inputTextArea.value += char;
+        // Scroll to the far right to keep the newest input in view
+        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    }
+};
 
 /**
  * Toggles the visibility of primary and secondary function buttons.
@@ -22,5 +33,27 @@ const toggleFunctions = (): void => {
     }
 };
 
-// Event Listeners
+/* Event Listeners */
 btnMore.addEventListener('click', toggleFunctions);
+
+// Attach click event listeners to the number buttons
+const numBtnMap: Record<string, string> = {
+    'btn-one': '1',
+    'btn-two': '2',
+    'btn-three': '3',
+    'btn-four': '4',
+    'btn-five': '5',
+    'btn-six': '6',
+    'btn-seven': '7',
+    'btn-eight': '8',
+    'btn-nine': '9'
+};
+Object.keys(numBtnMap).forEach(id => {
+    const btn = document.getElementById(id) as HTMLButtonElement;
+    if (btn) {
+        btn.addEventListener('click', () => {
+            appendCharacterToInput(numBtnMap[id]);
+        });
+    }
+});
+
