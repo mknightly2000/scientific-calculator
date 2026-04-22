@@ -1,7 +1,13 @@
+const isDigit = (char: string | undefined): boolean => {
+    return char !== undefined && /[0-9]/.test(char);
+};
+
+/* Areas */
 const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
 
 /* Buttons */
 const btnMore = document.getElementById('btn-more') as HTMLButtonElement;
+const btnZero = document.getElementById('btn-zero') as HTMLButtonElement;
 const funcButtons = document.querySelectorAll('.func');
 
 /**
@@ -13,6 +19,22 @@ const appendCharacterToInput = (char: string): void => {
         // Scroll to the far right to keep the newest input in view
         inputTextArea.scrollLeft = inputTextArea.scrollWidth;
     }
+};
+
+/**
+ * Appends a zero to the input area, preventing multiple leading zeros.
+ */
+const handleZeroClick = (): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+    const secondToLastChar = currentStr[currentStr.length - 2];
+
+    // Prevent multiple leading zeros
+    if (lastChar === '0' && secondToLastChar !== '.' && !isDigit(secondToLastChar)) {
+        return;
+    }
+
+    appendCharacterToInput('0');
 };
 
 /**
@@ -35,6 +57,7 @@ const toggleFunctions = (): void => {
 
 /* Event Listeners */
 btnMore.addEventListener('click', toggleFunctions);
+btnZero.addEventListener('click', handleZeroClick);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
@@ -56,4 +79,5 @@ Object.keys(numBtnMap).forEach(id => {
         });
     }
 });
+
 
