@@ -4,12 +4,39 @@ const isDigit = (char: string | undefined): boolean => {
 
 /* Areas */
 const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
+const outputResult = document.getElementById('output-result') as HTMLDivElement;
 
 /* Buttons */
+const btnClear = document.getElementById('btn-c') as HTMLButtonElement;
+const btnBackspace = document.getElementById('btn-backspace') as HTMLButtonElement;
 const btnMore = document.getElementById('btn-more') as HTMLButtonElement;
 const btnZero = document.getElementById('btn-zero') as HTMLButtonElement;
 const btnDecimal = document.getElementById('btn-decimal') as HTMLButtonElement;
+const btnAngleType = document.getElementById('btn-angle-type') as HTMLButtonElement;
+const angleTypeSpan = document.getElementById('angle-type-span') as HTMLSpanElement;
 const funcButtons = document.querySelectorAll('.func');
+
+/**
+ * Clears the entire input operation area and the result area.
+ */
+const handleClearClick = (): void => {
+    if (inputTextArea) {
+        inputTextArea.value = '';
+    }
+    if (outputResult) {
+        outputResult.innerText = '';
+    }
+};
+
+/**
+ * Removes the last character from the input area.
+ */
+const handleBackspaceClick = (): void => {
+    if (inputTextArea && inputTextArea.value.length > 0) {
+        inputTextArea.value = inputTextArea.value.slice(0, -1);
+        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    }
+};
 
 /**
  * Appends a character to the output operation text area.
@@ -126,6 +153,8 @@ const toggleFunctions = (): void => {
 };
 
 /* Event Listeners */
+btnClear.addEventListener('click', handleClearClick);
+btnBackspace.addEventListener('click', handleBackspaceClick);
 btnMore.addEventListener('click', toggleFunctions);
 btnZero.addEventListener('click', handleZeroClick);
 btnDecimal.addEventListener('click', handleDecimalClick);
