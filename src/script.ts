@@ -266,6 +266,23 @@ const handleParenthesisClick = (): void => {
     }
 };
 
+/**
+ * Appends mod, nPr (P), or nCr (C) to the input area.
+ * Only allows appending if the preceding character is a digit, ), π, e, or %.
+ */
+const handleCombinatoricsClick = (operatorStr: string): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that are allowed to precede mod, P, or C
+    const validPrecedingChars = [')', 'π', 'e', '%'];
+
+    // Only append if the last character is a digit or in the valid list
+    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+        appendCharacterToInput(operatorStr);
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -344,5 +361,19 @@ Object.keys(constantBtnMap).forEach(id => {
     const btn = document.getElementById(id) as HTMLButtonElement;
     btn.addEventListener('click', () => {
         handleConstantClick(constantBtnMap[id]);
+    });
+});
+
+
+// Attach click event listeners to the mod, nPr, and nCr buttons
+const combinatoricsBtnMap: Record<string, string> = {
+    'btn-mod': 'mod',
+    'btn-npr': 'P',
+    'btn-ncr': 'C'
+};
+Object.keys(combinatoricsBtnMap).forEach(id => {
+    const btn = document.getElementById(id) as HTMLButtonElement;
+    btn.addEventListener('click', () => {
+        handleCombinatoricsClick(combinatoricsBtnMap[id]);
     });
 });
