@@ -555,7 +555,8 @@ const basicOperatorBtnMap: Record<string, string> = {
     'btn-plus': '+',
     'btn-minus': '-',
     'btn-times': '×',
-    'btn-divide': '÷'
+    'btn-divide': '÷',
+    'btn-power': '^'
 };
 Object.keys(basicOperatorBtnMap).forEach(id => {
     const btn = document.getElementById(id) as HTMLButtonElement;
