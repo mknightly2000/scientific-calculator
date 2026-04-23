@@ -359,7 +359,7 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
     if (lastChar === '.') return;
 
     // Characters that are allowed to precede mod, P, or C
-    const validPrecedingChars = [')', 'π', 'e', '%'];
+    const validPrecedingChars = [')', 'π', 'e', '%', '!'];
 
     // Only append if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
@@ -378,7 +378,7 @@ const handlePercentageClick = (): void => {
     if (lastChar === '.') return;
 
     // Characters that are allowed to precede a percentage symbol
-    const validPrecedingChars = ['π', 'e', '%', ')'];
+    const validPrecedingChars = ['π', 'e', '%', ')', '!'];
 
     // Only append the percentage if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
