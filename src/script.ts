@@ -20,6 +20,7 @@ const angleTypeSpan = document.getElementById('angle-type-span') as HTMLSpanElem
 const funcButtons = document.querySelectorAll('.func');
 const btnFactorial = document.getElementById('btn-factorial') as HTMLButtonElement;
 const btnParenthesis = document.getElementById('btn-parenthesis') as HTMLButtonElement;
+const btnPercentage = document.getElementById('btn-percentage') as HTMLButtonElement;
 
 /**
  * Clears the entire input operation area and the result area.
@@ -283,6 +284,23 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
     }
 };
 
+/**
+ * Appends a percentage symbol (%) to the input area.
+ * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
+ */
+const handlePercentageClick = (): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that are allowed to precede a percentage symbol
+    const validPrecedingChars = ['π', 'e', '%', ')'];
+
+    // Only append the percentage if the last character is a digit or in the valid list
+    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+        appendCharacterToInput('%');
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -292,6 +310,7 @@ btnDecimal.addEventListener('click', handleDecimalClick);
 btnAngleType.addEventListener('click', handleAngleTypeClick);
 btnFactorial.addEventListener('click', handleFactorialClick);
 btnParenthesis.addEventListener('click', handleParenthesisClick);
+btnPercentage.addEventListener('click', handlePercentageClick);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
