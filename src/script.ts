@@ -196,7 +196,7 @@ const handleBasicOperatorClick = (operator: string): void => {
     }
 
     // If the last character is already an operator, replace it
-    if (['+', '-', '×', '÷'].includes(lastChar)) {
+    if (['+', '-', '×', '÷', '^'].includes(lastChar)) {
         // Prevent replacing a minus sign if it's the only character or follows an open parenthesis
         if (lastChar === '-' && (currentStr.length === 1 || currentStr[currentStr.length - 2] === '(')) {
             return;
