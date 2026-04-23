@@ -25,12 +25,33 @@ const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonEle
 const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonElement;
 
 /**
+ * Appends a character to the output operation text area.
+ */
+const appendCharacterToInput = (char: string): void => {
+    if (inputTextArea) {
+        inputTextArea.value += char;
+        // Scroll to the far right to keep the newest input in view
+        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    }
+};
+
+/**
  * Appends a number (1-9) to the input area.
- * Automatically inserts a multiplication sign if preceded by a constant, factorial, percent, or closing parenthesis.
+ * Automatically inserts a multiplication sign if preceded by a constant or closing parenthesis.
+ * Replaces standalone leading zeros to prevent octal evaluation errors.
  */
 const handleNumberClick = (numStr: string): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
+    const secondToLastChar = currentStr[currentStr.length - 2];
+
+    // Check if the last character is a standalone leading zero
+    if (lastChar === '0' && secondToLastChar !== '.' && !isDigit(secondToLastChar)) {
+        // Replace the standalone '0' with the new number
+        inputTextArea.value = currentStr.slice(0, -1) + numStr;
+        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        return;
+    }
 
     // Characters that should trigger an automatic multiplication sign before a number
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
@@ -88,17 +109,6 @@ const handleBackspaceClick = (): void => {
 
     inputTextArea.value = currentStr;
     inputTextArea.scrollLeft = inputTextArea.scrollWidth;
-};
-
-/**
- * Appends a character to the output operation text area.
- */
-const appendCharacterToInput = (char: string): void => {
-    if (inputTextArea) {
-        inputTextArea.value += char;
-        // Scroll to the far right to keep the newest input in view
-        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
-    }
 };
 
 /**
