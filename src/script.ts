@@ -184,6 +184,8 @@ const handleBasicOperatorClick = (operator: string): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
 
+    if (lastChar === '.') return;
+
     // Characters that are allowed to precede a basic math operator
     const validPrecedingChars = ['π', 'e', '!', '%', ')'];
 
@@ -261,6 +263,8 @@ const handleMathFunctionClick = (funcStr: string): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
 
+    if (lastChar === '.') return;
+
     // Characters that should trigger an automatic multiplication sign before a function
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
 
@@ -279,6 +283,8 @@ const handleMathFunctionClick = (funcStr: string): void => {
 const handleConstantClick = (constantStr: string): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
+
+    if (lastChar === '.') return;
 
     // Characters that should trigger an automatic multiplication sign before a constant
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
@@ -299,6 +305,8 @@ const handleFactorialClick = (): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
 
+    if (lastChar === '.') return;
+
     // Characters that are allowed to precede a factorial symbol
     const validPrecedingChars = ['π', 'e', '%', ')'];
 
@@ -315,6 +323,8 @@ const handleFactorialClick = (): void => {
 const handleParenthesisClick = (): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
+
+    if (lastChar === '.') return;
 
     // Count existing open and close parentheses in the string
     const openCount = (currentStr.match(/\(/g) || []).length;
@@ -346,6 +356,8 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
 
+    if (lastChar === '.') return;
+
     // Characters that are allowed to precede mod, P, or C
     const validPrecedingChars = [')', 'π', 'e', '%'];
 
@@ -362,6 +374,8 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
 const handlePercentageClick = (): void => {
     const currentStr = inputTextArea.value;
     const lastChar = currentStr[currentStr.length - 1];
+
+    if (lastChar === '.') return;
 
     // Characters that are allowed to precede a percentage symbol
     const validPrecedingChars = ['π', 'e', '%', ')'];
@@ -422,6 +436,10 @@ const handleReciprocalClick = (): void => {
  */
 const handleSwitchSignClick = (): void => {
     const currentStr = inputTextArea.value;
+
+    const lastChar = currentStr[currentStr.length - 1];
+
+    if (lastChar === '.') return;
 
     // If the input is completely empty, start with a negative sign
     if (!currentStr) {
