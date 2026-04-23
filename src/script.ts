@@ -22,6 +22,7 @@ const btnFactorial = document.getElementById('btn-factorial') as HTMLButtonEleme
 const btnParenthesis = document.getElementById('btn-parenthesis') as HTMLButtonElement;
 const btnPercentage = document.getElementById('btn-percentage') as HTMLButtonElement;
 const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonElement;
+const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonElement;
 
 /**
  * Clears the entire input operation area and the result area.
@@ -345,6 +346,91 @@ const handleReciprocalClick = (): void => {
     inputTextArea.scrollLeft = inputTextArea.scrollWidth;
 };
 
+/**
+ * Toggles the sign of the current term (+/-).
+ * Intelligently parses backwards to determine the boundaries of the last term,
+ * and either wraps it in (-...), removes existing wrap, or flips adjacent operators.
+ */
+const handleSwitchSignClick = (): void => {
+    const currentStr = inputTextArea.value;
+
+    // If the input is completely empty, start with a negative sign
+    if (!currentStr) {
+        appendCharacterToInput('-');
+        return;
+    }
+
+    // If the last character is a plus sign, replace it with a minus sign
+    if (currentStr.endsWith('+')) {
+        inputTextArea.value = currentStr.slice(0, -1) + '-';
+        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        return;
+    }
+
+    let depth = 0;
+    let i = currentStr.length - 1;
+
+    // Traverse backwards to find the start of the last term
+    while (i >= 0) {
+        const char = currentStr[i];
+
+        if (char === ')') {
+            depth++;
+        } else if (char === '(') {
+            depth--;
+            // If depth drops below 0, we've hit an open parenthesis belonging to a function or group
+            if (depth < 0) {
+                break;
+            }
+        } else if (depth === 0) {
+            // If we are outside of any parentheses, break at standard or combinatorics operators
+            if (['+', '-', '×', '÷', 'P', 'C'].includes(char)) {
+                break;
+            }
+            // Break if we hit the end of the 'mod' operator
+            if (char === 'd' && i >= 2 && currentStr.slice(i - 2, i + 1) === 'mod') {
+                break;
+            }
+        }
+        i--;
+    }
+
+    const splitIndex = i + 1;
+    let prefix = currentStr.slice(0, splitIndex);
+    let term = currentStr.slice(splitIndex);
+
+    // 1) If the term is already safely wrapped in (- ... ), unwrap it
+    if (term.startsWith('(-') && term.endsWith(')')) {
+        term = term.slice(2, -1);
+    }
+    // 2) If the prefix ends with a minus sign
+    else if (prefix.endsWith('-')) {
+        if (prefix === '-') {
+            // Unary minus at the very start: -100 => 100
+            prefix = '';
+        } else if (prefix.endsWith('(-')) {
+            // Preceded by an open parenthesis: (-6 => (6
+            prefix = prefix.slice(0, -1);
+        } else {
+            // Check if it's a binary minus (e.g., 25-6)
+            const charBeforeMinus = prefix[prefix.length - 2];
+            if (isDigit(charBeforeMinus) || ['π', 'e', '!', '%', ')'].includes(charBeforeMinus)) {
+                prefix = prefix.slice(0, -1) + '+'; // Convert to 25+6
+            } else {
+                // Unary minus following an unexpected operator fallback
+                term = term !== '' ? '(-' + term + ')' : '(-';
+            }
+        }
+    }
+    // 3) Default: Wrap the positive term in (- ... )
+    else {
+        term = term !== '' ? '(-' + term + ')' : '(-';
+    }
+
+    inputTextArea.value = prefix + term;
+    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -356,6 +442,7 @@ btnFactorial.addEventListener('click', handleFactorialClick);
 btnParenthesis.addEventListener('click', handleParenthesisClick);
 btnPercentage.addEventListener('click', handlePercentageClick);
 btnReciprocal.addEventListener('click', handleReciprocalClick);
+btnSwitchSign.addEventListener('click', handleSwitchSignClick);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
