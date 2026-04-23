@@ -55,13 +55,39 @@ const handleClearClick = (): void => {
 };
 
 /**
- * Removes the last character from the input area.
+ * Removes the last character or complete token from the input area.
  */
 const handleBackspaceClick = (): void => {
-    if (inputTextArea && inputTextArea.value.length > 0) {
-        inputTextArea.value = inputTextArea.value.slice(0, -1);
-        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    if (!inputTextArea || inputTextArea.value.length === 0) return;
+
+    let currentStr = inputTextArea.value;
+
+    // Multi-character tokens that should be deleted as a single block.
+    // Ordered by length descending so longer tokens (e.g. 'asinh(') match before shorter ones ('sinh(').
+    const multiCharTokens = [
+        'asinh(', 'acosh(', 'atanh(',
+        'sinh(', 'cosh(', 'tanh(', 'asin(', 'acos(', 'atan(',
+        'sin(', 'cos(', 'tan(', 'log(', 'abs(',
+        'ln(', '√(', 'mod'
+    ];
+
+    let tokenRemoved = false;
+
+    for (const token of multiCharTokens) {
+        if (currentStr.endsWith(token)) {
+            currentStr = currentStr.slice(0, -token.length);
+            tokenRemoved = true;
+            break;
+        }
     }
+
+    // If no multi-character token was at the end, remove just the single last character
+    if (!tokenRemoved) {
+        currentStr = currentStr.slice(0, -1);
+    }
+
+    inputTextArea.value = currentStr;
+    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
 };
 
 /**
