@@ -415,7 +415,7 @@ const handleReciprocalClick = (): void => {
             }
         } else if (depth === 0) {
             // If we are outside of any parentheses, break at standard or combinatorics operators
-            if (['+', '-', '×', '÷', 'P', 'C'].includes(char)) {
+            if (['+', '-', '×', '÷', '^', 'P', 'C'].includes(char)) {
                 break;
             }
             // Break if we hit the end of the 'mod' operator
@@ -477,7 +477,7 @@ const handleSwitchSignClick = (): void => {
             }
         } else if (depth === 0) {
             // If we are outside of any parentheses, break at standard or combinatorics operators
-            if (['+', '-', '×', '÷', 'P', 'C'].includes(char)) {
+            if (['+', '-', '×', '÷', '^', 'P', 'C'].includes(char)) {
                 break;
             }
             // Break if we hit the end of the 'mod' operator
