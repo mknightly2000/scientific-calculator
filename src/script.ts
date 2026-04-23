@@ -400,7 +400,8 @@ const handlePercentageClick = (): void => {
 
 /**
  * Appends a reciprocal operation (1÷) to the current term.
- * It intelligently finds the start of the last term by traversing backwards and inserts '(1÷' before it.
+ * It intelligently finds the start of the last term, wraps it in (1÷...),
+ * or removes the wrapper if it already exists.
  */
 const handleReciprocalClick = (): void => {
     const currentStr = inputTextArea.value;
@@ -432,12 +433,25 @@ const handleReciprocalClick = (): void => {
         i--;
     }
 
-    // Split the string and insert '(1÷'
+    // Split the string into the prefix and the target term
     const splitIndex = i + 1;
     const prefix = currentStr.slice(0, splitIndex);
-    const term = currentStr.slice(splitIndex);
+    let term = currentStr.slice(splitIndex);
 
-    inputTextArea.value = prefix + '(1÷' + term;
+    // 1) If the term is already safely wrapped in (1÷ ... ), unwrap it
+    if (term.startsWith('(1÷') && term.endsWith(')')) {
+        term = term.slice(3, -1);
+    }
+    // 2) If the term is just an open wrapper (e.g., clicked immediately after an operator), remove it
+    else if (term === '(1÷') {
+        term = '';
+    }
+    // 3) Default: Wrap the term in (1÷ ... )
+    else {
+        term = term !== '' ? '(1÷' + term + ')' : '(1÷';
+    }
+
+    inputTextArea.value = prefix + term;
     inputTextArea.scrollLeft = inputTextArea.scrollWidth;
 };
 
