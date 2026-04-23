@@ -204,7 +204,7 @@ const handleBasicOperatorClick = (operator: string): void => {
 
         // Allow a minus sign after ×, ÷, and ^
         if (['×', '÷', '^'].includes(lastChar) && operator === '-') {
-            inputTextArea.value += operator;
+            inputTextArea.value += '(' + operator;
             return;
         }
 
