@@ -291,9 +291,9 @@ const handleConstantClick = (constantStr: string): void => {
 
     // Characters that should trigger an automatic multiplication sign before a constant
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
-    const operatorsRequiringParen = ['P', 'C', 'd', '^'];
+    const operatorsRequiringParenthesis = ['P', 'C', 'd'];
 
-    if (operatorsRequiringParen.includes(lastChar)) {
+    if (operatorsRequiringParenthesis.includes(lastChar)) {
         // Enforce boundary after combinatorics and exponents: 5P => 5P(π
         appendCharacterToInput('(' + constantStr);
     } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
