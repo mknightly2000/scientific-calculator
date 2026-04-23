@@ -18,6 +18,7 @@ const btnDecimal = document.getElementById('btn-decimal') as HTMLButtonElement;
 const btnAngleType = document.getElementById('btn-angle-type') as HTMLButtonElement;
 const angleTypeSpan = document.getElementById('angle-type-span') as HTMLSpanElement;
 const funcButtons = document.querySelectorAll('.func');
+const btnFactorial = document.getElementById('btn-factorial') as HTMLButtonElement;
 
 /**
  * Clears the entire input operation area and the result area.
@@ -217,6 +218,23 @@ const handleConstantClick = (constantStr: string): void => {
     }
 };
 
+/**
+ * Appends a factorial symbol (!) to the input area.
+ * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
+ */
+const handleFactorialClick = (): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that are allowed to precede a factorial symbol
+    const validPrecedingChars = ['π', 'e', '%', ')'];
+
+    // Only append the factorial if the last character is a digit or in the valid list
+    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+        appendCharacterToInput('!');
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -224,7 +242,8 @@ btnMore.addEventListener('click', toggleFunctions);
 btnZero.addEventListener('click', handleZeroClick);
 btnDecimal.addEventListener('click', handleDecimalClick);
 btnAngleType.addEventListener('click', handleAngleTypeClick);
-
+btnFactorial.addEventListener('click', handleFactorialClick);
+  
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
     'btn-one': '1',
