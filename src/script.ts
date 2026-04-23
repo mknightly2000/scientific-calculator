@@ -25,6 +25,24 @@ const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonEle
 const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonElement;
 
 /**
+ * Appends a number (1-9) to the input area.
+ * Automatically inserts a multiplication sign if preceded by a constant, factorial, percent, or closing parenthesis.
+ */
+const handleNumberClick = (numStr: string): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Characters that should trigger an automatic multiplication sign before a number
+    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+
+    if (charsTriggeringMultiplication.includes(lastChar)) {
+        appendCharacterToInput('×' + numStr);
+    } else {
+        appendCharacterToInput(numStr);
+    }
+};
+
+/**
  * Clears the entire input operation area and the result area.
  */
 const handleClearClick = (): void => {
@@ -70,7 +88,14 @@ const handleZeroClick = (): void => {
         return;
     }
 
-    appendCharacterToInput('0');
+    // Characters that should trigger an automatic multiplication sign before a number
+    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+
+    if (charsTriggeringMultiplication.includes(lastChar)) {
+        appendCharacterToInput('×0');
+    } else {
+        appendCharacterToInput('0');
+    }
 };
 
 /**
@@ -89,8 +114,16 @@ const handleDecimalClick = (): void => {
     if (lastChar === '.') {
         // Prevent consecutive decimals
         return;
+    }
+
+    // Characters that should trigger an automatic multiplication sign
+    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+
+    if (charsTriggeringMultiplication.includes(lastChar)) {
+        // If preceded by a constant or closed group, multiply by 0.
+        appendCharacterToInput('×0.');
     } else if (!isDigit(lastChar)) {
-        // If the last character is an operator or parenthesis, append '0.'
+        // If the last character is an operator or open parenthesis, append '0.'
         appendCharacterToInput('0.');
     } else {
         // Look backwards to see if the current number already has a decimal
@@ -459,7 +492,7 @@ const numBtnMap: Record<string, string> = {
 Object.keys(numBtnMap).forEach(id => {
     const btn = document.getElementById(id) as HTMLButtonElement;
     btn.addEventListener('click', () => {
-            appendCharacterToInput(numBtnMap[id]);
+        handleNumberClick(numBtnMap[id]);
     });
 });
 
