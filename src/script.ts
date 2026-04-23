@@ -314,7 +314,7 @@ const handleFactorialClick = (): void => {
     if (lastChar === '.') return;
 
     // Characters that are allowed to precede a factorial symbol
-    const validPrecedingChars = ['π', 'e', '%', ')'];
+    const validPrecedingChars = ['π', 'e', '%', ')', '!'];
 
     // Only append the factorial if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
