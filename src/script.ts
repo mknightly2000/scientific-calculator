@@ -19,6 +19,7 @@ const btnAngleType = document.getElementById('btn-angle-type') as HTMLButtonElem
 const angleTypeSpan = document.getElementById('angle-type-span') as HTMLSpanElement;
 const funcButtons = document.querySelectorAll('.func');
 const btnFactorial = document.getElementById('btn-factorial') as HTMLButtonElement;
+const btnParenthesis = document.getElementById('btn-parenthesis') as HTMLButtonElement;
 
 /**
  * Clears the entire input operation area and the result area.
@@ -235,6 +236,36 @@ const handleFactorialClick = (): void => {
     }
 };
 
+/**
+ * Appends an open or close parenthesis based on the current input context.
+ * Automatically inserts a multiplication sign before an open parenthesis if preceded by a digit or constant.
+ */
+const handleParenthesisClick = (): void => {
+    const currentStr = inputTextArea.value;
+    const lastChar = currentStr[currentStr.length - 1];
+
+    // Count existing open and close parentheses in the string
+    const openCount = (currentStr.match(/\(/g) || []).length;
+    const closeCount = (currentStr.match(/\)/g) || []).length;
+
+    // Characters that allow closing a parenthesis or trigger auto-multiplication before an opening one
+    const validPrecedingChars = ['π', 'e', '!', '%', ')'];
+
+    // Determine if it is mathematically valid to close a parenthesis right now
+    const canClose = openCount > closeCount && (isDigit(lastChar) || validPrecedingChars.includes(lastChar));
+
+    if (canClose) {
+        appendCharacterToInput(')');
+    } else {
+        // Opening a parenthesis. Check if we need a multiplication sign first.
+        if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+            appendCharacterToInput('×(');
+        } else {
+            appendCharacterToInput('(');
+        }
+    }
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -243,7 +274,8 @@ btnZero.addEventListener('click', handleZeroClick);
 btnDecimal.addEventListener('click', handleDecimalClick);
 btnAngleType.addEventListener('click', handleAngleTypeClick);
 btnFactorial.addEventListener('click', handleFactorialClick);
-  
+btnParenthesis.addEventListener('click', handleParenthesisClick);
+
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
     'btn-one': '1',
