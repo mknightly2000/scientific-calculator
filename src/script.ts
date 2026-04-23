@@ -21,6 +21,7 @@ const funcButtons = document.querySelectorAll('.func');
 const btnFactorial = document.getElementById('btn-factorial') as HTMLButtonElement;
 const btnParenthesis = document.getElementById('btn-parenthesis') as HTMLButtonElement;
 const btnPercentage = document.getElementById('btn-percentage') as HTMLButtonElement;
+const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonElement;
 
 /**
  * Clears the entire input operation area and the result area.
@@ -301,6 +302,49 @@ const handlePercentageClick = (): void => {
     }
 };
 
+/**
+ * Appends a reciprocal operation (1÷) to the current term.
+ * It intelligently finds the start of the last term by traversing backwards and inserts '(1÷' before it.
+ */
+const handleReciprocalClick = (): void => {
+    const currentStr = inputTextArea.value;
+    let depth = 0;
+    let i = currentStr.length - 1;
+
+    // Traverse backwards to find the start of the last term
+    while (i >= 0) {
+        const char = currentStr[i];
+
+        if (char === ')') {
+            depth++;
+        } else if (char === '(') {
+            depth--;
+            // If depth drops below 0, we've hit an open parenthesis belonging to a function or group
+            if (depth < 0) {
+                break;
+            }
+        } else if (depth === 0) {
+            // If we are outside of any parentheses, break at standard or combinatorics operators
+            if (['+', '-', '×', '÷', 'P', 'C'].includes(char)) {
+                break;
+            }
+            // Break if we hit the end of the 'mod' operator
+            if (char === 'd' && i >= 2 && currentStr.slice(i - 2, i + 1) === 'mod') {
+                break;
+            }
+        }
+        i--;
+    }
+
+    // Split the string and insert '(1÷'
+    const splitIndex = i + 1;
+    const prefix = currentStr.slice(0, splitIndex);
+    const term = currentStr.slice(splitIndex);
+
+    inputTextArea.value = prefix + '(1÷' + term;
+    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+};
+
 /* Event Listeners */
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -311,6 +355,7 @@ btnAngleType.addEventListener('click', handleAngleTypeClick);
 btnFactorial.addEventListener('click', handleFactorialClick);
 btnParenthesis.addEventListener('click', handleParenthesisClick);
 btnPercentage.addEventListener('click', handlePercentageClick);
+btnReciprocal.addEventListener('click', handleReciprocalClick);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
