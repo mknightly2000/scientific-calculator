@@ -267,9 +267,12 @@ const handleMathFunctionClick = (funcStr: string): void => {
 
     // Characters that should trigger an automatic multiplication sign before a function
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+    const operatorsRequiringParenthesis = ['P', 'C', 'd', '^']; // 'd' matches the end of 'mod'
 
-    // If the preceding character is a digit or a specific constant/symbol, add '×'
-    if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
+    if (operatorsRequiringParenthesis.includes(lastChar)) {
+        // Enforce boundary after combinatorics and exponents: 5P => 5P(sin(
+        appendCharacterToInput('(' + funcStr);
+    } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
         appendCharacterToInput('×' + funcStr);
     } else {
         appendCharacterToInput(funcStr);
@@ -288,9 +291,12 @@ const handleConstantClick = (constantStr: string): void => {
 
     // Characters that should trigger an automatic multiplication sign before a constant
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
+    const operatorsRequiringParen = ['P', 'C', 'd', '^'];
 
-    // If the preceding character is a digit or a specific constant/symbol, add '×'
-    if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
+    if (operatorsRequiringParen.includes(lastChar)) {
+        // Enforce boundary after combinatorics and exponents: 5P => 5P(π
+        appendCharacterToInput('(' + constantStr);
+    } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
         appendCharacterToInput('×' + constantStr);
     } else {
         appendCharacterToInput(constantStr);
