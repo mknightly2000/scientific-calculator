@@ -202,6 +202,12 @@ const handleBasicOperatorClick = (operator: string): void => {
             return;
         }
 
+        // Allow a minus sign after ×, ÷, and ^
+        if (['×', '÷', '^'].includes(lastChar) && operator === '-') {
+            inputTextArea.value += operator;
+            return;
+        }
+
         inputTextArea.value = currentStr.slice(0, -1) + operator;
         inputTextArea.scrollLeft = inputTextArea.scrollWidth;
         return;
