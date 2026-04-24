@@ -2,14 +2,14 @@ const isDigit = (char: string | undefined): boolean => {
     return char !== undefined && /[0-9]/.test(char);
 };
 
-/* State */
+// --- State ---
 let angleType: string = "deg"
 
-/* Areas */
+// --- Areas ---
 const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
 const outputResult = document.getElementById('output-result') as HTMLDivElement;
 
-/* Buttons */
+// --- Buttons ---
 const btnClear = document.getElementById('btn-c') as HTMLButtonElement;
 const btnBackspace = document.getElementById('btn-backspace') as HTMLButtonElement;
 const btnMore = document.getElementById('btn-more') as HTMLButtonElement;
@@ -24,32 +24,37 @@ const btnPercentage = document.getElementById('btn-percentage') as HTMLButtonEle
 const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonElement;
 const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonElement;
 
-/**
- * Appends a character to the output operation text area.
- */
-const appendCharacterToInput = (char: string): void => {
+// --- Helpers ---
+const getInput = () => inputTextArea.value;
+const getLastChar = () => {
+    const val = getInput();
+    return val[val.length - 1];
+};
+const setInput = (newVal: string) => {
+    inputTextArea.value = newVal;
+    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+};
+const appendStringToInput = (str: string): void => {
     if (inputTextArea) {
-        inputTextArea.value += char;
-        // Scroll to the far right to keep the newest input in view
-        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        setInput(getInput() + str);
     }
 };
 
+// --- Click Handlers ---
 /**
  * Appends a number (1-9) to the input area.
  * Automatically inserts a multiplication sign if preceded by a constant or closing parenthesis.
  * Replaces standalone leading zeros to prevent octal evaluation errors.
  */
 const handleNumberClick = (numStr: string): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const currentStr = getInput();
+    const lastChar = getLastChar();
     const secondToLastChar = currentStr[currentStr.length - 2];
 
     // Check if the last character is a standalone leading zero
     if (lastChar === '0' && secondToLastChar !== '.' && !isDigit(secondToLastChar)) {
         // Replace the standalone '0' with the new number
-        inputTextArea.value = currentStr.slice(0, -1) + numStr;
-        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        setInput(currentStr.slice(0, -1) + numStr);
         return;
     }
 
@@ -57,9 +62,9 @@ const handleNumberClick = (numStr: string): void => {
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
 
     if (charsTriggeringMultiplication.includes(lastChar)) {
-        appendCharacterToInput('×' + numStr);
+        appendStringToInput('×' + numStr);
     } else {
-        appendCharacterToInput(numStr);
+        appendStringToInput(numStr);
     }
 };
 
@@ -68,7 +73,7 @@ const handleNumberClick = (numStr: string): void => {
  */
 const handleClearClick = (): void => {
     if (inputTextArea) {
-        inputTextArea.value = '';
+        setInput('');
     }
     if (outputResult) {
         outputResult.innerText = '';
@@ -79,9 +84,9 @@ const handleClearClick = (): void => {
  * Removes the last character or complete token from the input area.
  */
 const handleBackspaceClick = (): void => {
-    if (!inputTextArea || inputTextArea.value.length === 0) return;
+    if (!inputTextArea || getInput().length === 0) return;
 
-    let currentStr = inputTextArea.value;
+    let currentStr = getInput();
 
     // Multi-character tokens that should be deleted as a single block.
     // Ordered by length descending so longer tokens (e.g. 'asinh(') match before shorter ones ('sinh(').
@@ -107,16 +112,15 @@ const handleBackspaceClick = (): void => {
         currentStr = currentStr.slice(0, -1);
     }
 
-    inputTextArea.value = currentStr;
-    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    setInput(currentStr);
 };
 
 /**
  * Appends a zero to the input area, preventing multiple leading zeros.
  */
 const handleZeroClick = (): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const currentStr = getInput();
+    const lastChar = getLastChar();
     const secondToLastChar = currentStr[currentStr.length - 2];
 
     // Prevent multiple leading zeros
@@ -128,9 +132,9 @@ const handleZeroClick = (): void => {
     const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
 
     if (charsTriggeringMultiplication.includes(lastChar)) {
-        appendCharacterToInput('×0');
+        appendStringToInput('×0');
     } else {
-        appendCharacterToInput('0');
+        appendStringToInput('0');
     }
 };
 
@@ -138,12 +142,12 @@ const handleZeroClick = (): void => {
  * Appends a decimal to the input, preventing multiple decimals in a single number.
  */
 const handleDecimalClick = (): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const currentStr = getInput();
+    const lastChar = getLastChar();
 
     // Handle empty input case
     if (!currentStr) {
-        appendCharacterToInput('0.');
+        appendStringToInput('0.');
         return;
     }
 
@@ -157,10 +161,10 @@ const handleDecimalClick = (): void => {
 
     if (charsTriggeringMultiplication.includes(lastChar)) {
         // If preceded by a constant or closed group, multiply by 0.
-        appendCharacterToInput('×0.');
+        appendStringToInput('×0.');
     } else if (!isDigit(lastChar)) {
         // If the last character is an operator or open parenthesis, append '0.'
-        appendCharacterToInput('0.');
+        appendStringToInput('0.');
     } else {
         // Look backwards to see if the current number already has a decimal
         for (let i = currentStr.length - 1; i >= 0; i--) {
@@ -173,7 +177,7 @@ const handleDecimalClick = (): void => {
             }
         }
 
-        appendCharacterToInput('.');
+        appendStringToInput('.');
     }
 };
 
@@ -181,8 +185,8 @@ const handleDecimalClick = (): void => {
  * Appends an operator to the input if the preceding character is valid.
  */
 const handleBasicOperatorClick = (operator: string): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const currentStr = getInput();
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -191,7 +195,7 @@ const handleBasicOperatorClick = (operator: string): void => {
 
     // Exception: Allow a minus sign at the very beginning or after an opening parenthesis
     if (operator === '-' && (!currentStr || lastChar === '(')) {
-        appendCharacterToInput(operator);
+        appendStringToInput(operator);
         return;
     }
 
@@ -204,18 +208,17 @@ const handleBasicOperatorClick = (operator: string): void => {
 
         // Allow a minus sign after ×, ÷, and ^
         if (['×', '÷', '^'].includes(lastChar) && operator === '-') {
-            inputTextArea.value += '(' + operator;
+            appendStringToInput('(' + operator);
             return;
         }
 
-        inputTextArea.value = currentStr.slice(0, -1) + operator;
-        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        setInput(currentStr.slice(0, -1) + operator);
         return;
     }
 
     // Only append the operator if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
-        appendCharacterToInput(operator);
+        appendStringToInput(operator);
     }
 };
 
@@ -266,8 +269,7 @@ const handleAngleTypeClick = (): void => {
  * Automatically inserts a multiplication sign if preceded by a digit or constant.
  */
 const handleMathFunctionClick = (funcStr: string): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -277,11 +279,11 @@ const handleMathFunctionClick = (funcStr: string): void => {
 
     if (operatorsRequiringParenthesis.includes(lastChar)) {
         // Enforce boundary after combinatorics and exponents: 5P => 5P(sin(
-        appendCharacterToInput('(' + funcStr);
+        appendStringToInput('(' + funcStr);
     } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
-        appendCharacterToInput('×' + funcStr);
+        appendStringToInput('×' + funcStr);
     } else {
-        appendCharacterToInput(funcStr);
+        appendStringToInput(funcStr);
     }
 };
 
@@ -290,8 +292,7 @@ const handleMathFunctionClick = (funcStr: string): void => {
  * Automatically inserts a multiplication sign if preceded by a digit, constant, factorial, percent, or closing parenthesis.
  */
 const handleConstantClick = (constantStr: string): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -301,11 +302,11 @@ const handleConstantClick = (constantStr: string): void => {
 
     if (operatorsRequiringParenthesis.includes(lastChar)) {
         // Enforce boundary after combinatorics and exponents: 5P => 5P(π
-        appendCharacterToInput('(' + constantStr);
+        appendStringToInput('(' + constantStr);
     } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
-        appendCharacterToInput('×' + constantStr);
+        appendStringToInput('×' + constantStr);
     } else {
-        appendCharacterToInput(constantStr);
+        appendStringToInput(constantStr);
     }
 };
 
@@ -314,8 +315,7 @@ const handleConstantClick = (constantStr: string): void => {
  * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
  */
 const handleFactorialClick = (): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -324,7 +324,7 @@ const handleFactorialClick = (): void => {
 
     // Only append the factorial if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
-        appendCharacterToInput('!');
+        appendStringToInput('!');
     }
 };
 
@@ -333,8 +333,8 @@ const handleFactorialClick = (): void => {
  * Automatically inserts a multiplication sign before an open parenthesis if preceded by a digit or constant.
  */
 const handleParenthesisClick = (): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const currentStr = getInput();
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -349,13 +349,13 @@ const handleParenthesisClick = (): void => {
     const canClose = openCount > closeCount && (isDigit(lastChar) || validPrecedingChars.includes(lastChar));
 
     if (canClose) {
-        appendCharacterToInput(')');
+        appendStringToInput(')');
     } else {
         // Opening a parenthesis. Check if we need a multiplication sign first.
         if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
-            appendCharacterToInput('×(');
+            appendStringToInput('×(');
         } else {
-            appendCharacterToInput('(');
+            appendStringToInput('(');
         }
     }
 };
@@ -365,8 +365,7 @@ const handleParenthesisClick = (): void => {
  * Only allows appending if the preceding character is a digit, ), π, e, or %.
  */
 const handleCombinatoricsClick = (operatorStr: string): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -375,7 +374,7 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
 
     // Only append if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
-        appendCharacterToInput(operatorStr);
+        appendStringToInput(operatorStr);
     }
 };
 
@@ -384,8 +383,7 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
  * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
  */
 const handlePercentageClick = (): void => {
-    const currentStr = inputTextArea.value;
-    const lastChar = currentStr[currentStr.length - 1];
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
@@ -394,7 +392,7 @@ const handlePercentageClick = (): void => {
 
     // Only append the percentage if the last character is a digit or in the valid list
     if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
-        appendCharacterToInput('%');
+        appendStringToInput('%');
     }
 };
 
@@ -404,7 +402,7 @@ const handlePercentageClick = (): void => {
  * or removes the wrapper if it already exists.
  */
 const handleReciprocalClick = (): void => {
-    const currentStr = inputTextArea.value;
+    const currentStr = getInput();
     let depth = 0;
     let i = currentStr.length - 1;
 
@@ -451,8 +449,7 @@ const handleReciprocalClick = (): void => {
         term = term !== '' ? '(1÷' + term + ')' : '(1÷';
     }
 
-    inputTextArea.value = prefix + term;
-    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    setInput(prefix + term);
 };
 
 /**
@@ -461,22 +458,20 @@ const handleReciprocalClick = (): void => {
  * and either wraps it in (-...), removes existing wrap, or flips adjacent operators.
  */
 const handleSwitchSignClick = (): void => {
-    const currentStr = inputTextArea.value;
-
-    const lastChar = currentStr[currentStr.length - 1];
+    const currentStr = getInput();
+    const lastChar = getLastChar();
 
     if (lastChar === '.') return;
 
     // If the input is completely empty, start with a negative sign
     if (!currentStr) {
-        appendCharacterToInput('-');
+        appendStringToInput('-');
         return;
     }
 
     // If the last character is a plus sign, replace it with a minus sign
     if (currentStr.endsWith('+')) {
-        inputTextArea.value = currentStr.slice(0, -1) + '-';
-        inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+        setInput(currentStr.slice(0, -1) + '-');
         return;
     }
 
@@ -540,11 +535,10 @@ const handleSwitchSignClick = (): void => {
         term = term !== '' ? '(-' + term + ')' : '(-';
     }
 
-    inputTextArea.value = prefix + term;
-    inputTextArea.scrollLeft = inputTextArea.scrollWidth;
+    setInput(prefix + term);
 };
 
-/* Event Listeners */
+// --- Event Listeners ---
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
 btnMore.addEventListener('click', toggleFunctions);
