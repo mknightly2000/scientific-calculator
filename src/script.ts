@@ -87,35 +87,21 @@ const handleClearClick = (): void => {
  * Removes the last character or complete token from the input area.
  */
 const handleBackspaceClick = (): void => {
-    if (!inputTextArea || getInput().length === 0) return;
+    const currentStr = getInput();
+    if (!currentStr) return;
 
-    let currentStr = getInput();
+    // Matches any of the specific multi-char tokens exactly at the end of the string ($)
+    const tokenRegex = /(asinh\(|acosh\(|atanh\(|sinh\(|cosh\(|tanh\(|asin\(|acos\(|atan\(|sin\(|cos\(|tan\(|log\(|abs\(|ln\(|√\(|mod)$/;
 
-    // Multi-character tokens that should be deleted as a single block.
-    // Ordered by length descending so longer tokens (e.g. 'asinh(') match before shorter ones ('sinh(').
-    const multiCharTokens = [
-        'asinh(', 'acosh(', 'atanh(',
-        'sinh(', 'cosh(', 'tanh(', 'asin(', 'acos(', 'atan(',
-        'sin(', 'cos(', 'tan(', 'log(', 'abs(',
-        'ln(', '√(', 'mod'
-    ];
+    const match = currentStr.match(tokenRegex);
 
-    let tokenRemoved = false;
-
-    for (const token of multiCharTokens) {
-        if (currentStr.endsWith(token)) {
-            currentStr = currentStr.slice(0, -token.length);
-            tokenRemoved = true;
-            break;
-        }
+    if (match) {
+        // Remove the matched token
+        setInput(currentStr.slice(0, -match[0].length));
+    } else {
+        // Remove a single character
+        setInput(currentStr.slice(0, -1));
     }
-
-    // If no multi-character token was at the end, remove just the single last character
-    if (!tokenRemoved) {
-        currentStr = currentStr.slice(0, -1);
-    }
-
-    setInput(currentStr);
 };
 
 /**
