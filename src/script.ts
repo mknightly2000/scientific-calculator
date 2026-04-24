@@ -2,6 +2,12 @@ const isDigit = (char: string | undefined): boolean => {
     return char !== undefined && /[0-9]/.test(char);
 };
 
+// --- Constants ---
+// Characters that should trigger an automatic multiplication sign before a number
+const AUTO_MULTIPLY_TRIGGERS = ['π', 'e', '!', '%', ')'];
+// Characters that represent the end of a mathematical term
+const VALID_TERM_ENDINGS = [')', 'π', 'e', '%', '!'];
+
 // --- State ---
 let angleType: string = "deg"
 
@@ -58,10 +64,7 @@ const handleNumberClick = (numStr: string): void => {
         return;
     }
 
-    // Characters that should trigger an automatic multiplication sign before a number
-    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
-
-    if (charsTriggeringMultiplication.includes(lastChar)) {
+    if (AUTO_MULTIPLY_TRIGGERS.includes(lastChar)) {
         appendStringToInput('×' + numStr);
     } else {
         appendStringToInput(numStr);
@@ -128,10 +131,7 @@ const handleZeroClick = (): void => {
         return;
     }
 
-    // Characters that should trigger an automatic multiplication sign before a number
-    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
-
-    if (charsTriggeringMultiplication.includes(lastChar)) {
+    if (AUTO_MULTIPLY_TRIGGERS.includes(lastChar)) {
         appendStringToInput('×0');
     } else {
         appendStringToInput('0');
@@ -156,10 +156,7 @@ const handleDecimalClick = (): void => {
         return;
     }
 
-    // Characters that should trigger an automatic multiplication sign
-    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
-
-    if (charsTriggeringMultiplication.includes(lastChar)) {
+    if (AUTO_MULTIPLY_TRIGGERS.includes(lastChar)) {
         // If preceded by a constant or closed group, multiply by 0.
         appendStringToInput('×0.');
     } else if (!isDigit(lastChar)) {
@@ -190,9 +187,6 @@ const handleBasicOperatorClick = (operator: string): void => {
 
     if (lastChar === '.') return;
 
-    // Characters that are allowed to precede a basic math operator
-    const validPrecedingChars = ['π', 'e', '!', '%', ')'];
-
     // Exception: Allow a minus sign at the very beginning or after an opening parenthesis
     if (operator === '-' && (!currentStr || lastChar === '(')) {
         appendStringToInput(operator);
@@ -217,7 +211,7 @@ const handleBasicOperatorClick = (operator: string): void => {
     }
 
     // Only append the operator if the last character is a digit or in the valid list
-    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+    if (isDigit(lastChar) || VALID_TERM_ENDINGS.includes(lastChar)) {
         appendStringToInput(operator);
     }
 };
@@ -273,14 +267,12 @@ const handleMathFunctionClick = (funcStr: string): void => {
 
     if (lastChar === '.') return;
 
-    // Characters that should trigger an automatic multiplication sign before a function
-    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
     const operatorsRequiringParenthesis = ['P', 'C', 'd', '^']; // 'd' matches the end of 'mod'
 
     if (operatorsRequiringParenthesis.includes(lastChar)) {
         // Enforce boundary after combinatorics and exponents: 5P => 5P(sin(
         appendStringToInput('(' + funcStr);
-    } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
+    } else if (isDigit(lastChar) || AUTO_MULTIPLY_TRIGGERS.includes(lastChar)) {
         appendStringToInput('×' + funcStr);
     } else {
         appendStringToInput(funcStr);
@@ -296,14 +288,12 @@ const handleConstantClick = (constantStr: string): void => {
 
     if (lastChar === '.') return;
 
-    // Characters that should trigger an automatic multiplication sign before a constant
-    const charsTriggeringMultiplication = ['π', 'e', '!', '%', ')'];
     const operatorsRequiringParenthesis = ['P', 'C', 'd'];
 
     if (operatorsRequiringParenthesis.includes(lastChar)) {
         // Enforce boundary after combinatorics and exponents: 5P => 5P(π
         appendStringToInput('(' + constantStr);
-    } else if (isDigit(lastChar) || charsTriggeringMultiplication.includes(lastChar)) {
+    } else if (isDigit(lastChar) || AUTO_MULTIPLY_TRIGGERS.includes(lastChar)) {
         appendStringToInput('×' + constantStr);
     } else {
         appendStringToInput(constantStr);
@@ -319,11 +309,8 @@ const handleFactorialClick = (): void => {
 
     if (lastChar === '.') return;
 
-    // Characters that are allowed to precede a factorial symbol
-    const validPrecedingChars = ['π', 'e', '%', ')', '!'];
-
     // Only append the factorial if the last character is a digit or in the valid list
-    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+    if (isDigit(lastChar) || VALID_TERM_ENDINGS.includes(lastChar)) {
         appendStringToInput('!');
     }
 };
@@ -342,17 +329,14 @@ const handleParenthesisClick = (): void => {
     const openCount = (currentStr.match(/\(/g) || []).length;
     const closeCount = (currentStr.match(/\)/g) || []).length;
 
-    // Characters that allow closing a parenthesis or trigger auto-multiplication before an opening one
-    const validPrecedingChars = ['π', 'e', '!', '%', ')'];
-
     // Determine if it is mathematically valid to close a parenthesis right now
-    const canClose = openCount > closeCount && (isDigit(lastChar) || validPrecedingChars.includes(lastChar));
+    const canClose = openCount > closeCount && (isDigit(lastChar) || VALID_TERM_ENDINGS.includes(lastChar));
 
     if (canClose) {
         appendStringToInput(')');
     } else {
         // Opening a parenthesis. Check if we need a multiplication sign first.
-        if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+        if (isDigit(lastChar) || VALID_TERM_ENDINGS.includes(lastChar)) {
             appendStringToInput('×(');
         } else {
             appendStringToInput('(');
@@ -369,11 +353,8 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
 
     if (lastChar === '.') return;
 
-    // Characters that are allowed to precede mod, P, or C
-    const validPrecedingChars = [')', 'π', 'e', '%', '!'];
-
     // Only append if the last character is a digit or in the valid list
-    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+    if (isDigit(lastChar) || VALID_TERM_ENDINGS.includes(lastChar)) {
         appendStringToInput(operatorStr);
     }
 };
@@ -387,11 +368,8 @@ const handlePercentageClick = (): void => {
 
     if (lastChar === '.') return;
 
-    // Characters that are allowed to precede a percentage symbol
-    const validPrecedingChars = ['π', 'e', '%', ')', '!'];
-
     // Only append the percentage if the last character is a digit or in the valid list
-    if (isDigit(lastChar) || validPrecedingChars.includes(lastChar)) {
+    if (isDigit(lastChar) || VALID_TERM_ENDINGS.includes(lastChar)) {
         appendStringToInput('%');
     }
 };
