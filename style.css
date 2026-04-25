@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;900&display=swap');
+
+:root {
+    --bg-main: #FFFFFF;
+    --bg-calc: #F8F8F8;
+    --btn-bg: #FAFAFA;
+    --btn-hover: #EDEDED;
+    --btn-border: #CBCBCB;
+    --text-main: #6D6D6D;
+    --accent-green: #3B9B6B;
+    --accent-green-hover: #2E8B5D;
+    --accent-red: #D83D3D;
+    --shadow-light: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+    --shadow-active: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+* {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+}
+
+body {
+    background-color: var(--bg-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.calculator {
+    padding: 15px;
+    background-color: var(--bg-calc);
+    border-radius: 35px;
+    border: 1px solid var(--btn-border);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+/* --- Output Area --- */
+.output {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.output-modes {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.output-modes span {
+    font-size: 15px;
+    color: var(--text-main);
+    font-weight: 600;
+    user-select: none;
+}
+
+.output-operation {
+    width: 100%;
+}
+
+#output-operation-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    text-align: right;
+    font-size: 35px;
+    background-color: transparent;
+    color: var(--text-main);
+    resize: none;
+    white-space: nowrap;
+    overflow-x: auto;
+    height: 50px;
+}
+
+.output-result {
+    text-align: right;
+    font-size: 35px;
+    color: var(--accent-green);
+    min-height: 40px;
+    font-weight: 600;
+}
+
+/* --- Keyboard Area --- */
+.keyboard {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--btn-border);
+    background-color: var(--btn-bg);
+    color: var(--text-main);
+    border-radius: 25px;
+    height: 45px;
+    width: 70px;
+    font-size: 16px;
+    user-select: none;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
+    box-shadow: var(--shadow-light);
+    outline: none;
+}
+
+.btn:hover {
+    background-color: var(--btn-hover);
+}
+
+.btn:active {
+    transform: scale(0.95);
+    box-shadow: var(--shadow-active);
+}
+
+/* Typography & Utility Classes */
+.text-red { color: var(--accent-red); }
+.text-green { color: var(--accent-green); }
+.font-weight-bold { font-weight: 900; font-size: 20px; }
+.operator { font-size: 22px; color: var(--accent-green); }
+
+/* Special Buttons */
+.equals {
+    background-color: var(--accent-green);
+    color: white;
+    border: none;
+    font-size: 24px;
+}
+
+.equals:hover {
+    background-color: var(--accent-green-hover);
+}
+
+.sup-text {
+    font-size: 10px;
+    position: relative;
+    top: -5px;
+}
+
+.hidden {
+    display: none;
+}

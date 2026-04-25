@@ -11,5 +11,88 @@
 </head>
 <body>
 
+<div class="main-container">
+    <div class="calculator">
+        <div class="output">
+            <div class="output-modes">
+                <span id="angle-type-span">Deg</span>
+                <span id="more-span"></span>
+            </div>
+            <div class="output-operation">
+                <textarea autocomplete="off" id="output-operation-input" readonly></textarea>
+            </div>
+            <div class="output-result" id="output-result"></div>
+        </div>
+
+        <div class="keyboard">
+            <button class="btn font-weight-bold" id="btn-more">&#8644;</button>
+            <button class="btn" id="btn-angle-type">Rad</button>
+            <button class="btn" id="btn-parenthesis">( )</button>
+            <button class="btn text-red" id="btn-c">C</button>
+            <button class="btn text-red" id="btn-backspace"><i class="fas fa-backspace"></i></button>
+            <button class="btn text-green" id="btn-percentage">%</button>
+            <button class="btn operator" id="btn-divide">÷</button>
+
+            <button class="btn func" id="btn-sin">sin</button>
+            <button class="btn func hidden" id="btn-sinh">sinh</button>
+
+            <button class="btn func" id="btn-cos">cos</button>
+            <button class="btn func hidden" id="btn-cosh">cosh</button>
+
+            <button class="btn func" id="btn-tan">tan</button>
+            <button class="btn func hidden" id="btn-tanh">tanh</button>
+
+            <button class="btn num" id="btn-seven">7</button>
+            <button class="btn num" id="btn-eight">8</button>
+            <button class="btn num" id="btn-nine">9</button>
+            <button class="btn operator" id="btn-times">×</button>
+
+            <button class="btn func" id="btn-ln">ln</button>
+            <button class="btn func hidden" id="btn-asin">asin</button>
+
+            <button class="btn func" id="btn-log">log</button>
+            <button class="btn func hidden" id="btn-acos">acos</button>
+
+            <button class="btn func" id="btn-reciprocal">1/x</button>
+            <button class="btn func hidden" id="btn-atan">atan</button>
+
+            <button class="btn num" id="btn-four">4</button>
+            <button class="btn num" id="btn-five">5</button>
+            <button class="btn num" id="btn-six">6</button>
+            <button class="btn operator" id="btn-minus">&minus;</button>
+
+            <button class="btn func" id="btn-power">x<sup class="sup-text">y</sup></button>
+            <button class="btn func hidden" id="btn-asinh">asinh</button>
+
+            <button class="btn func" id="btn-square-root">&Sqrt;</button>
+            <button class="btn func hidden" id="btn-acosh">acosh</button>
+
+            <button class="btn func" id="btn-abs">|x|</button>
+            <button class="btn func hidden" id="btn-atanh">atanh</button>
+
+            <button class="btn num" id="btn-one">1</button>
+            <button class="btn num" id="btn-two">2</button>
+            <button class="btn num" id="btn-three">3</button>
+            <button class="btn operator" id="btn-plus">+</button>
+
+            <button class="btn func" id="btn-factorial">x!</button>
+            <button class="btn func hidden" id="btn-mod">mod</button>
+
+            <button class="btn func" id="btn-pi">π</button>
+            <button class="btn func hidden" id="btn-npr">nPr</button>
+
+            <button class="btn func" id="btn-e">e</button>
+            <button class="btn func hidden" id="btn-ncr">nCr</button>
+
+            <button class="btn num" id="btn-switch-sign">+/-</button>
+            <button class="btn num" id="btn-zero">0</button>
+            <button class="btn num" id="btn-decimal">.</button>
+            <button class="btn equals" id="btn-equals">=</button>
+        </div>
+    </div>
+</div>
+
+<script src="dist/script.js"></script>
+
 </body>
 </html>
