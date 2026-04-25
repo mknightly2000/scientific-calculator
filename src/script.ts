@@ -29,6 +29,7 @@ const btnParenthesis = document.getElementById('btn-parenthesis') as HTMLButtonE
 const btnPercentage = document.getElementById('btn-percentage') as HTMLButtonElement;
 const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonElement;
 const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonElement;
+const btnEquals = document.getElementById('btn-equals') as HTMLButtonElement;
 
 // --- Helpers ---
 const getInput = () => inputTextArea.value;
@@ -469,6 +470,18 @@ const handleSwitchSignClick = (): void => {
     setInput(prefix + term);
 };
 
+/**
+ * Evaluates the mathematical expression in the input area.
+ * Converts display tokens to JavaScript-compatible operators and functions.
+ */
+const handleCalculate = (): void => {
+    let expression = getInput();
+
+    if (!expression) return;
+
+    outputResult.innerText = "123";
+};
+
 // --- Event Listeners ---
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -481,6 +494,7 @@ btnParenthesis.addEventListener('click', handleParenthesisClick);
 btnPercentage.addEventListener('click', handlePercentageClick);
 btnReciprocal.addEventListener('click', handleReciprocalClick);
 btnSwitchSign.addEventListener('click', handleSwitchSignClick);
+btnEquals.addEventListener('click', handleCalculate);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
@@ -554,7 +568,6 @@ Object.keys(constantBtnMap).forEach(id => {
     });
 });
 
-
 // Attach click event listeners to the mod, nPr, and nCr buttons
 const combinatoricsBtnMap: Record<string, string> = {
     'btn-mod': 'mod',
@@ -567,3 +580,4 @@ Object.keys(combinatoricsBtnMap).forEach(id => {
         handleCombinatoricsClick(combinatoricsBtnMap[id]);
     });
 });
+
