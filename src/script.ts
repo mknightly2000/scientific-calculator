@@ -45,6 +45,28 @@ const appendStringToInput = (str: string): void => {
         setInput(getInput() + str);
     }
 };
+/**
+ * Traverses backwards through the string to find the starting index of the last term.
+ */
+const findLastTermSplitIndex = (str: string): number => {
+    let depth = 0;
+    let i = str.length - 1;
+
+    while (i >= 0) {
+        const char = str[i];
+        if (char === ')') {
+            depth++;
+        } else if (char === '(') {
+            depth--;
+            if (depth < 0) break;
+        } else if (depth === 0) {
+            if (['+', '-', '×', '÷', '^', 'P', 'C'].includes(char)) break;
+            if (char === 'd' && i >= 2 && str.slice(i - 2, i + 1) === 'mod') break;
+        }
+        i--;
+    }
+    return i + 1;
+};
 
 // --- Click Handlers ---
 /**
@@ -367,36 +389,9 @@ const handlePercentageClick = (): void => {
  */
 const handleReciprocalClick = (): void => {
     const currentStr = getInput();
-    let depth = 0;
-    let i = currentStr.length - 1;
-
-    // Traverse backwards to find the start of the last term
-    while (i >= 0) {
-        const char = currentStr[i];
-
-        if (char === ')') {
-            depth++;
-        } else if (char === '(') {
-            depth--;
-            // If depth drops below 0, we've hit an open parenthesis belonging to a function or group
-            if (depth < 0) {
-                break;
-            }
-        } else if (depth === 0) {
-            // If we are outside of any parentheses, break at standard or combinatorics operators
-            if (['+', '-', '×', '÷', '^', 'P', 'C'].includes(char)) {
-                break;
-            }
-            // Break if we hit the end of the 'mod' operator
-            if (char === 'd' && i >= 2 && currentStr.slice(i - 2, i + 1) === 'mod') {
-                break;
-            }
-        }
-        i--;
-    }
 
     // Split the string into the prefix and the target term
-    const splitIndex = i + 1;
+    const splitIndex = findLastTermSplitIndex(currentStr);
     const prefix = currentStr.slice(0, splitIndex);
     let term = currentStr.slice(splitIndex);
 
@@ -439,35 +434,7 @@ const handleSwitchSignClick = (): void => {
         return;
     }
 
-    let depth = 0;
-    let i = currentStr.length - 1;
-
-    // Traverse backwards to find the start of the last term
-    while (i >= 0) {
-        const char = currentStr[i];
-
-        if (char === ')') {
-            depth++;
-        } else if (char === '(') {
-            depth--;
-            // If depth drops below 0, we've hit an open parenthesis belonging to a function or group
-            if (depth < 0) {
-                break;
-            }
-        } else if (depth === 0) {
-            // If we are outside of any parentheses, break at standard or combinatorics operators
-            if (['+', '-', '×', '÷', '^', 'P', 'C'].includes(char)) {
-                break;
-            }
-            // Break if we hit the end of the 'mod' operator
-            if (char === 'd' && i >= 2 && currentStr.slice(i - 2, i + 1) === 'mod') {
-                break;
-            }
-        }
-        i--;
-    }
-
-    const splitIndex = i + 1;
+    const splitIndex = findLastTermSplitIndex(currentStr);
     let prefix = currentStr.slice(0, splitIndex);
     let term = currentStr.slice(splitIndex);
 
