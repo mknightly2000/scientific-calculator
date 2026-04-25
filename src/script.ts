@@ -1,12 +1,26 @@
-const isDigit = (char: string | undefined): boolean => {
-    return char !== undefined && /[0-9]/.test(char);
-};
+type TokenType =
+    | 'Number'
+    | 'BinaryOperator'  // +, -, ×, ÷, ^, mod, P, C
+    | 'PostfixUnary'    // !, %
+    | 'PrefixUnary'     // sin, cos, tan, log...
+    | 'Constant'        // π, e
+    | 'LeftParen'
+    | 'RightParen'
+    | 'Unknown';
+
+interface Token {
+    type: TokenType;
+    value: string;
+}
 
 // --- Constants ---
 // Characters that should trigger an automatic multiplication sign before a number
+const BINARY_OPERATORS = ['+', '-', '×', '÷', '^', 'mod', 'P', 'C'];
+const POSTFIX_UNARY_OPERATORS = ['!', '%'];
+const PREFIX_UNARY_OPERATORS = ['√', 'sin', 'cos', 'tan', 'ln', 'log', 'abs', 'sinh', 'cosh', 'tanh', 'asin', 'acos', 'atan', 'asinh', 'acosh', 'atanh'];
+const CONSTANTS = ['π', 'e']
 const AUTO_MULTIPLY_TRIGGERS = ['π', 'e', '!', '%', ')'];
-// Characters that represent the end of a mathematical term
-const VALID_TERM_ENDINGS = [')', 'π', 'e', '%', '!'];
+const VALID_TERM_ENDINGS = [')', 'π', 'e', '%', '!'];  // Characters that represent the end of a mathematical term
 
 // --- State ---
 let angleType: string = "deg"
@@ -32,6 +46,9 @@ const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonEl
 const btnEquals = document.getElementById('btn-equals') as HTMLButtonElement;
 
 // --- Helpers ---
+const isDigit = (char: string | undefined): boolean => {
+    return char !== undefined && /[0-9]/.test(char);
+};
 const getInput = () => inputTextArea.value;
 const getLastChar = () => {
     const val = getInput();
@@ -68,6 +85,40 @@ const findLastTermSplitIndex = (str: string): number => {
     }
     return i + 1;
 };
+const createToken = (value: string) => {
+    let type: TokenType;
+
+    if (isDigit(value[0]) || value[0] === '.') {
+        type = 'Number';
+    }
+    else if (BINARY_OPERATORS.includes(value)) {
+        type = 'BinaryOperator';
+    }
+    else if (POSTFIX_UNARY_OPERATORS.includes(value)) {
+        type = 'PostfixUnary';
+    }
+    else if (PREFIX_UNARY_OPERATORS.includes(value)) {
+        type = 'PrefixUnary';
+    }
+    else if (CONSTANTS.includes(value)) {
+        type = 'Constant';
+    }
+    else if (value === '(') {
+        type = 'LeftParen';
+    }
+    else if (value === ')') {
+        type = 'RightParen';
+    }
+    else {
+        type = 'Unknown';
+    }
+
+    return {
+        type: type,
+        value: value,
+    }
+}
+
 
 // --- Click Handlers ---
 /**
@@ -475,9 +526,68 @@ const handleSwitchSignClick = (): void => {
  * Converts display tokens to JavaScript-compatible operators and functions.
  */
 const handleCalculate = (): void => {
+    const tokenize = (expression: string): Token[] => {
+        const tokens: Token[] = [];
+        let cursor = 0;
+
+        let buffer: string = ''
+
+        while (cursor < expression.length) {
+            let char = expression[cursor];
+
+            // 1. Skip spaces (in case they are allowed in the future through user direct input)
+            if (char === ' ') {
+                cursor += 1;
+                continue;
+            }
+
+            // 2. Handle numbers
+            while (isDigit(char) || char === '.') {
+                buffer += char;
+                cursor += 1;
+                char = expression[cursor];
+            }
+
+            if (buffer !== '') {
+                tokens.push(createToken(buffer));
+                buffer = '';
+                continue;
+            }
+
+            // 3. Hand Letters
+            while (/[a-zA-Zπ]/.test(char)) {
+                buffer += char;
+                cursor += 1;
+                char = expression[cursor];
+            }
+
+            if (buffer !== '') {
+                tokens.push(createToken(buffer));
+                buffer = '';
+                continue;
+            }
+
+            // 4. Handle single non-letter character operators
+            if (['+', '-', '×', '÷', '^', '!', '%', '(', ')', '√'].includes(char)) {
+                tokens.push(createToken(char));
+                cursor += 1;
+                continue;
+            }
+
+            // 5. Unknown characters
+            console.warn(`Unknown character at index ${cursor}: ${char}`);
+            tokens.push(createToken(char));
+            cursor += 1;
+        }
+
+        return tokens;
+    };
+
     let expression = getInput();
 
     if (!expression) return;
+
+    const tokens = tokenize(expression);
 
     outputResult.innerText = "123";
 };
