@@ -36,7 +36,9 @@ const ASSOCIATIVITY: Record<string, 'Left' | 'Right'> = {
     'UnaryMinus': 'Right'
 };
 // --- State ---
-let angleType: string = "deg"
+let angleType: string = "deg";
+let isCalculated: boolean = false;
+let lastResult: string = "";
 
 // --- Areas ---
 const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
@@ -131,6 +133,18 @@ const createToken = (value: string) => {
         value: value,
     }
 }
+/**
+ * Checks if a calculation was just completed.
+ * If so, resets the state and clears the output area, returning true so handlers can apply post-calculation logic.
+ */
+const handlePostCalculationState = (): boolean => {
+    if (isCalculated) {
+        isCalculated = false;
+        outputResult.innerText = '';
+        return true;
+    }
+    return false;
+};
 
 
 // --- Click Handlers ---
@@ -140,6 +154,8 @@ const createToken = (value: string) => {
  * Replaces standalone leading zeros to prevent octal evaluation errors.
  */
 const handleNumberClick = (numStr: string): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
     const secondToLastChar = currentStr[currentStr.length - 2];
@@ -174,6 +190,10 @@ const handleClearClick = (): void => {
  * Removes the last character or complete token from the input area.
  */
 const handleBackspaceClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult);
+    }
+
     const currentStr = getInput();
     if (!currentStr) return;
 
@@ -195,6 +215,8 @@ const handleBackspaceClick = (): void => {
  * Appends a zero to the input area, preventing multiple leading zeros.
  */
 const handleZeroClick = (): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
     const secondToLastChar = currentStr[currentStr.length - 2];
@@ -215,6 +237,8 @@ const handleZeroClick = (): void => {
  * Appends a decimal to the input, preventing multiple decimals in a single number.
  */
 const handleDecimalClick = (): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -255,6 +279,11 @@ const handleDecimalClick = (): void => {
  * Appends an operator to the input if the preceding character is valid.
  */
 const handleBasicOperatorClick = (operator: string): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + operator);
+        return;
+    }
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -336,6 +365,11 @@ const handleAngleTypeClick = (): void => {
  * Automatically inserts a multiplication sign if preceded by a digit or constant.
  */
 const handleMathFunctionClick = (funcStr: string): void => {
+    if (handlePostCalculationState()) {
+        setInput(funcStr + lastResult + ')');
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -357,6 +391,8 @@ const handleMathFunctionClick = (funcStr: string): void => {
  * Automatically inserts a multiplication sign if preceded by a digit, constant, factorial, percent, or closing parenthesis.
  */
 const handleConstantClick = (constantStr: string): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -378,6 +414,11 @@ const handleConstantClick = (constantStr: string): void => {
  * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
  */
 const handleFactorialClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + '!');
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -393,6 +434,8 @@ const handleFactorialClick = (): void => {
  * Automatically inserts a multiplication sign before an open parenthesis if preceded by a digit or constant.
  */
 const handleParenthesisClick = (): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -422,6 +465,11 @@ const handleParenthesisClick = (): void => {
  * Only allows appending if the preceding character is a digit, ), π, e, or %.
  */
 const handleCombinatoricsClick = (operatorStr: string): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + operatorStr);
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -437,6 +485,11 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
  * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
  */
 const handlePercentageClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + '%');
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -453,6 +506,11 @@ const handlePercentageClick = (): void => {
  * or removes the wrapper if it already exists.
  */
 const handleReciprocalClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput('(1÷' + lastResult + ')');
+        return;
+    }
+
     const currentStr = getInput();
 
     // Split the string into the prefix and the target term
@@ -482,6 +540,15 @@ const handleReciprocalClick = (): void => {
  * and either wraps it in (-...), removes existing wrap, or flips adjacent operators.
  */
 const handleSwitchSignClick = (): void => {
+    if (handlePostCalculationState()) {
+        if (lastResult.startsWith('-')) {
+            setInput(lastResult.slice(1));
+        } else {
+            setInput('(-' + lastResult + ')');
+        }
+        return;
+    }
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -761,6 +828,10 @@ const handleCalculate = (): void => {
         else {
             // Sanitize floating point ghost errors (0.1 + 0.2)
             output = parseFloat(result.toPrecision(15)).toString();
+
+            // Trigger the continuous calculation state
+            isCalculated = true;
+            lastResult = output;
         }
     } catch (error) {
         console.error("Error", error);
