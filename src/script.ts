@@ -22,7 +22,19 @@ const PREFIX_UNARY_OPERATORS = ['√', 'sin', 'cos', 'tan', 'ln', 'log', 'abs', 
 const CONSTANTS = ['π', 'e']
 const AUTO_MULTIPLY_TRIGGERS = ['π', 'e', '!', '%', ')'];
 const VALID_TERM_ENDINGS = [')', 'π', 'e', '%', '!'];  // Characters that represent the end of a mathematical term
+const PRECEDENCE: Record<string, number> = {
+    '+': 1, '-': 1,
+    '×': 2, '÷': 2, 'mod': 2, 'P': 2, 'C': 2,
+    '^': 3,
+    'UnaryMinus': 4
+};
 
+const ASSOCIATIVITY: Record<string, 'Left' | 'Right'> = {
+    '+': 'Left', '-': 'Left',
+    '×': 'Left', '÷': 'Left', 'mod': 'Left', 'P': 'Left', 'C': 'Left',
+    '^': 'Right',
+    'UnaryMinus': 'Right'
+};
 // --- State ---
 let angleType: string = "deg"
 
@@ -595,12 +607,62 @@ const handleCalculate = (): void => {
 
         return tokens;
     };
+    const parse = (tokens: Token[]): Token[] => {
+        const postfixQueue: Token[] = [];
+        const operatorStack: Token[] = [];
+
+        for (const token of tokens) {
+            if (token.type === 'Number' || token.type === 'Constant' || token.type === 'PostfixUnary') {
+                postfixQueue.push(token);
+            } else if (token.type === 'PrefixUnary') {
+                operatorStack.push(token);
+            } else if (token.type === 'BinaryOperator' || token.type === 'UnaryMinus') {
+                const o1 = token;
+                const precedence1 = token.type === 'UnaryMinus' ? PRECEDENCE['UnaryMinus'] : PRECEDENCE[o1.value];
+                const associativity1 = token.type === 'UnaryMinus' ? ASSOCIATIVITY['UnaryMinus'] : ASSOCIATIVITY[o1.value];
+
+                while (operatorStack.length > 0) {
+                    const o2 = operatorStack[operatorStack.length - 1];
+                    if (o2.type !== 'LeftParen') {
+                        const isFunction = o2.type === 'PrefixUnary';
+                        const precedence2 = o2.type === 'UnaryMinus' ? PRECEDENCE['UnaryMinus'] : (PRECEDENCE[o2.value] || 0);
+
+                        if (isFunction || precedence2 > precedence1 || (precedence2 === precedence1 && associativity1 === 'Left')) {
+                            postfixQueue.push(operatorStack.pop()!);
+                            continue;
+                        }
+                    }
+                    break;
+                }
+                operatorStack.push(o1);
+            } else if (token.type === 'LeftParen') {
+                operatorStack.push(token);
+            } else if (token.type === 'RightParen') {
+                while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type !== 'LeftParen') {
+                    postfixQueue.push(operatorStack.pop()!);
+                }
+                if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type === 'LeftParen') {
+                    operatorStack.pop(); // Discard the left paren
+                }
+                if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type === 'PrefixUnary') {
+                    postfixQueue.push(operatorStack.pop()!);
+                }
+            }
+        }
+
+        while (operatorStack.length > 0) {
+            postfixQueue.push(operatorStack.pop()!);
+        }
+
+        return postfixQueue;
+    };
 
     let expression = getInput();
 
     if (!expression) return;
 
-    const tokens = tokenize(expression);
+    const tokens: Token[] = tokenize(expression);
+    const postfixQueue: Token[] = parse(tokens)
 
     outputResult.innerText = "123";
 };
