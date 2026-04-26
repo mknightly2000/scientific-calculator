@@ -6,6 +6,7 @@ type TokenType =
     | 'Constant'        // π, e
     | 'LeftParen'
     | 'RightParen'
+    | 'UnaryMinus'
     | 'Unknown';
 
 interface Token {
@@ -527,7 +528,7 @@ const handleSwitchSignClick = (): void => {
  */
 const handleCalculate = (): void => {
     const tokenize = (expression: string): Token[] => {
-        const tokens: Token[] = [];
+        let tokens: Token[] = [];
         let cursor = 0;
 
         let buffer: string = ''
@@ -579,6 +580,18 @@ const handleCalculate = (): void => {
             tokens.push(createToken(char));
             cursor += 1;
         }
+
+        // 6. Identify unary minus
+        tokens = tokens.map((token, index) => {
+            if (token.value === '-') {
+                const prev = tokens[index - 1];
+                // It is a unary minus if it's the first token, or follows an operator or open paren
+                if (!prev || prev.type === 'BinaryOperator' || prev.type === 'LeftParen') {
+                    return { type: 'UnaryMinus', value: '-' };
+                }
+            }
+            return token;
+        });
 
         return tokens;
     };
