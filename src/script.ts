@@ -568,7 +568,7 @@ const handleCalculate = (): void => {
             }
 
             // 3. Hand Letters
-            while (/[a-zA-Zπ]/.test(char)) {
+            while (char !== undefined && /[a-zA-Zπ]/.test(char)) {
                 buffer += char;
                 cursor += 1;
                 char = expression[cursor];
