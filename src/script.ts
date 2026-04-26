@@ -1,15 +1,44 @@
-const isDigit = (char: string | undefined): boolean => {
-    return char !== undefined && /[0-9]/.test(char);
-};
+type TokenType =
+    | 'Number'
+    | 'BinaryOperator'  // +, -, ×, ÷, ^, mod, P, C
+    | 'PostfixUnary'    // !, %
+    | 'PrefixUnary'     // sin, cos, tan, log...
+    | 'Constant'        // π, e
+    | 'LeftParen'
+    | 'RightParen'
+    | 'UnaryMinus'
+    | 'Unknown';
+
+interface Token {
+    type: TokenType;
+    value: string;
+}
 
 // --- Constants ---
 // Characters that should trigger an automatic multiplication sign before a number
+const BINARY_OPERATORS = ['+', '-', '×', '÷', '^', 'mod', 'P', 'C'];
+const POSTFIX_UNARY_OPERATORS = ['!', '%'];
+const PREFIX_UNARY_OPERATORS = ['√', 'sin', 'cos', 'tan', 'ln', 'log', 'abs', 'sinh', 'cosh', 'tanh', 'asin', 'acos', 'atan', 'asinh', 'acosh', 'atanh'];
+const CONSTANTS = ['π', 'e']
 const AUTO_MULTIPLY_TRIGGERS = ['π', 'e', '!', '%', ')'];
-// Characters that represent the end of a mathematical term
-const VALID_TERM_ENDINGS = [')', 'π', 'e', '%', '!'];
+const VALID_TERM_ENDINGS = [')', 'π', 'e', '%', '!'];  // Characters that represent the end of a mathematical term
+const PRECEDENCE: Record<string, number> = {
+    '+': 1, '-': 1,
+    '×': 2, '÷': 2, 'mod': 2, 'P': 2, 'C': 2,
+    '^': 3,
+    'UnaryMinus': 4
+};
 
+const ASSOCIATIVITY: Record<string, 'Left' | 'Right'> = {
+    '+': 'Left', '-': 'Left',
+    '×': 'Left', '÷': 'Left', 'mod': 'Left', 'P': 'Left', 'C': 'Left',
+    '^': 'Right',
+    'UnaryMinus': 'Right'
+};
 // --- State ---
-let angleType: string = "deg"
+let angleType: string = "deg";
+let isCalculated: boolean = false;
+let lastResult: string = "";
 
 // --- Areas ---
 const inputTextArea = document.getElementById('output-operation-input') as HTMLTextAreaElement;
@@ -29,8 +58,12 @@ const btnParenthesis = document.getElementById('btn-parenthesis') as HTMLButtonE
 const btnPercentage = document.getElementById('btn-percentage') as HTMLButtonElement;
 const btnReciprocal = document.getElementById('btn-reciprocal') as HTMLButtonElement;
 const btnSwitchSign = document.getElementById('btn-switch-sign') as HTMLButtonElement;
+const btnEquals = document.getElementById('btn-equals') as HTMLButtonElement;
 
 // --- Helpers ---
+const isDigit = (char: string | undefined): boolean => {
+    return char !== undefined && /[0-9]/.test(char);
+};
 const getInput = () => inputTextArea.value;
 const getLastChar = () => {
     const val = getInput();
@@ -67,6 +100,52 @@ const findLastTermSplitIndex = (str: string): number => {
     }
     return i + 1;
 };
+const createToken = (value: string) => {
+    let type: TokenType;
+
+    if (isDigit(value[0]) || value[0] === '.') {
+        type = 'Number';
+    }
+    else if (BINARY_OPERATORS.includes(value)) {
+        type = 'BinaryOperator';
+    }
+    else if (POSTFIX_UNARY_OPERATORS.includes(value)) {
+        type = 'PostfixUnary';
+    }
+    else if (PREFIX_UNARY_OPERATORS.includes(value)) {
+        type = 'PrefixUnary';
+    }
+    else if (CONSTANTS.includes(value)) {
+        type = 'Constant';
+    }
+    else if (value === '(') {
+        type = 'LeftParen';
+    }
+    else if (value === ')') {
+        type = 'RightParen';
+    }
+    else {
+        type = 'Unknown';
+    }
+
+    return {
+        type: type,
+        value: value,
+    }
+}
+/**
+ * Checks if a calculation was just completed.
+ * If so, resets the state and clears the output area, returning true so handlers can apply post-calculation logic.
+ */
+const handlePostCalculationState = (): boolean => {
+    if (isCalculated) {
+        isCalculated = false;
+        outputResult.innerText = '';
+        return true;
+    }
+    return false;
+};
+
 
 // --- Click Handlers ---
 /**
@@ -75,6 +154,8 @@ const findLastTermSplitIndex = (str: string): number => {
  * Replaces standalone leading zeros to prevent octal evaluation errors.
  */
 const handleNumberClick = (numStr: string): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
     const secondToLastChar = currentStr[currentStr.length - 2];
@@ -109,6 +190,10 @@ const handleClearClick = (): void => {
  * Removes the last character or complete token from the input area.
  */
 const handleBackspaceClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult);
+    }
+
     const currentStr = getInput();
     if (!currentStr) return;
 
@@ -130,6 +215,8 @@ const handleBackspaceClick = (): void => {
  * Appends a zero to the input area, preventing multiple leading zeros.
  */
 const handleZeroClick = (): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
     const secondToLastChar = currentStr[currentStr.length - 2];
@@ -150,6 +237,8 @@ const handleZeroClick = (): void => {
  * Appends a decimal to the input, preventing multiple decimals in a single number.
  */
 const handleDecimalClick = (): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -190,6 +279,11 @@ const handleDecimalClick = (): void => {
  * Appends an operator to the input if the preceding character is valid.
  */
 const handleBasicOperatorClick = (operator: string): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + operator);
+        return;
+    }
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -271,6 +365,11 @@ const handleAngleTypeClick = (): void => {
  * Automatically inserts a multiplication sign if preceded by a digit or constant.
  */
 const handleMathFunctionClick = (funcStr: string): void => {
+    if (handlePostCalculationState()) {
+        setInput(funcStr + lastResult + ')');
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -292,6 +391,8 @@ const handleMathFunctionClick = (funcStr: string): void => {
  * Automatically inserts a multiplication sign if preceded by a digit, constant, factorial, percent, or closing parenthesis.
  */
 const handleConstantClick = (constantStr: string): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -313,6 +414,11 @@ const handleConstantClick = (constantStr: string): void => {
  * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
  */
 const handleFactorialClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + '!');
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -328,6 +434,8 @@ const handleFactorialClick = (): void => {
  * Automatically inserts a multiplication sign before an open parenthesis if preceded by a digit or constant.
  */
 const handleParenthesisClick = (): void => {
+    if (handlePostCalculationState()) setInput('');
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -357,6 +465,11 @@ const handleParenthesisClick = (): void => {
  * Only allows appending if the preceding character is a digit, ), π, e, or %.
  */
 const handleCombinatoricsClick = (operatorStr: string): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + operatorStr);
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -372,6 +485,11 @@ const handleCombinatoricsClick = (operatorStr: string): void => {
  * Only allows appending if the preceding character is a digit, π, e, %, or a closing parenthesis.
  */
 const handlePercentageClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput(lastResult + '%');
+        return;
+    }
+
     const lastChar = getLastChar();
 
     if (lastChar === '.') return;
@@ -388,6 +506,11 @@ const handlePercentageClick = (): void => {
  * or removes the wrapper if it already exists.
  */
 const handleReciprocalClick = (): void => {
+    if (handlePostCalculationState()) {
+        setInput('(1÷' + lastResult + ')');
+        return;
+    }
+
     const currentStr = getInput();
 
     // Split the string into the prefix and the target term
@@ -417,6 +540,15 @@ const handleReciprocalClick = (): void => {
  * and either wraps it in (-...), removes existing wrap, or flips adjacent operators.
  */
 const handleSwitchSignClick = (): void => {
+    if (handlePostCalculationState()) {
+        if (lastResult.startsWith('-')) {
+            setInput(lastResult.slice(1));
+        } else {
+            setInput('(-' + lastResult + ')');
+        }
+        return;
+    }
+
     const currentStr = getInput();
     const lastChar = getLastChar();
 
@@ -469,6 +601,246 @@ const handleSwitchSignClick = (): void => {
     setInput(prefix + term);
 };
 
+/**
+ * Evaluates the mathematical expression in the input area.
+ * Converts display tokens to JavaScript-compatible operators and functions.
+ */
+const handleCalculate = (): void => {
+    const tokenize = (expression: string): Token[] => {
+        let tokens: Token[] = [];
+        let cursor = 0;
+
+        let buffer: string = ''
+
+        while (cursor < expression.length) {
+            let char = expression[cursor];
+
+            // 1. Skip spaces (in case they are allowed in the future through user direct input)
+            if (char === ' ') {
+                cursor += 1;
+                continue;
+            }
+
+            // 2. Handle numbers
+            while (isDigit(char) || char === '.') {
+                buffer += char;
+                cursor += 1;
+                char = expression[cursor];
+            }
+
+            if (buffer !== '') {
+                tokens.push(createToken(buffer));
+                buffer = '';
+                continue;
+            }
+
+            // 3. Hand Letters
+            while (char !== undefined && /[a-zA-Zπ]/.test(char)) {
+                buffer += char;
+                cursor += 1;
+                char = expression[cursor];
+            }
+
+            if (buffer !== '') {
+                tokens.push(createToken(buffer));
+                buffer = '';
+                continue;
+            }
+
+            // 4. Handle single non-letter character operators
+            if (['+', '-', '×', '÷', '^', '!', '%', '(', ')', '√'].includes(char)) {
+                tokens.push(createToken(char));
+                cursor += 1;
+                continue;
+            }
+
+            // 5. Unknown characters
+            console.warn(`Unknown character at index ${cursor}: ${char}`);
+            tokens.push(createToken(char));
+            cursor += 1;
+        }
+
+        // 6. Identify unary minus
+        tokens = tokens.map((token, index) => {
+            if (token.value === '-') {
+                const prev = tokens[index - 1];
+                // It is a unary minus if it's the first token, or follows an operator or open paren
+                if (!prev || prev.type === 'BinaryOperator' || prev.type === 'LeftParen') {
+                    return { type: 'UnaryMinus', value: '-' };
+                }
+            }
+            return token;
+        });
+
+        return tokens;
+    };
+    const parse = (tokens: Token[]): Token[] => {
+        const postfixQueue: Token[] = [];
+        const operatorStack: Token[] = [];
+
+        for (const token of tokens) {
+            if (token.type === 'Number' || token.type === 'Constant' || token.type === 'PostfixUnary') {
+                postfixQueue.push(token);
+            } else if (token.type === 'PrefixUnary') {
+                operatorStack.push(token);
+            } else if (token.type === 'BinaryOperator' || token.type === 'UnaryMinus') {
+                const o1 = token;
+                const precedence1 = token.type === 'UnaryMinus' ? PRECEDENCE['UnaryMinus'] : PRECEDENCE[o1.value];
+                const associativity1 = token.type === 'UnaryMinus' ? ASSOCIATIVITY['UnaryMinus'] : ASSOCIATIVITY[o1.value];
+
+                while (operatorStack.length > 0) {
+                    const o2 = operatorStack[operatorStack.length - 1];
+                    if (o2.type !== 'LeftParen') {
+                        const isFunction = o2.type === 'PrefixUnary';
+                        const precedence2 = o2.type === 'UnaryMinus' ? PRECEDENCE['UnaryMinus'] : (PRECEDENCE[o2.value] || 0);
+
+                        if (isFunction || precedence2 > precedence1 || (precedence2 === precedence1 && associativity1 === 'Left')) {
+                            postfixQueue.push(operatorStack.pop()!);
+                            continue;
+                        }
+                    }
+                    break;
+                }
+                operatorStack.push(o1);
+            } else if (token.type === 'LeftParen') {
+                operatorStack.push(token);
+            } else if (token.type === 'RightParen') {
+                while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type !== 'LeftParen') {
+                    postfixQueue.push(operatorStack.pop()!);
+                }
+                if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type === 'LeftParen') {
+                    operatorStack.pop(); // Discard the left paren
+                }
+                if (operatorStack.length > 0 && operatorStack[operatorStack.length - 1].type === 'PrefixUnary') {
+                    postfixQueue.push(operatorStack.pop()!);
+                }
+            }
+        }
+
+        while (operatorStack.length > 0) {
+            postfixQueue.push(operatorStack.pop()!);
+        }
+
+        return postfixQueue;
+    };
+    const evaluate = (postfixTokens: Token[]): number => {
+        // Factorial helper function
+        const factorial = (n: number): number => {
+            if (n < 0) return NaN; // TODO: implement gamma function for negative integers
+            if (n === 0 || n === 1) return 1;
+
+            let res = 1;
+            for (let i = 2; i <= n; i++) {
+                res *= i;
+            }
+
+            return res;
+        };
+
+        const stack: number[] = [];
+
+        // Angle converter for Trig Functions
+        const convertAngle = (val: number): number => {
+            if (angleType === 'deg') return val * (Math.PI / 180);
+            if (angleType === 'grad') return val * (Math.PI / 200);
+            return val; // rad
+        };
+
+        for (const token of postfixTokens) {
+            if (token.type === 'Number') {
+                stack.push(parseFloat(token.value));
+            } else if (token.type === 'Constant') {
+                switch (token.value) {
+                    case 'π': stack.push(Math.PI); break;
+                    case 'e': stack.push(Math.E); break;
+                }
+            } else if (token.type === 'UnaryMinus') {
+                const a = stack.pop()!;
+                stack.push(-a);
+            } else if (token.type === 'PostfixUnary') {
+                const a = stack.pop()!;
+
+                if (token.value === '!')
+                    stack.push(factorial(Math.round(a)));
+                if (token.value === '%')
+                    stack.push(a / 100);
+            } else if (token.type === 'PrefixUnary') {
+                const a = stack.pop()!;
+
+                switch (token.value) {
+                    case '√': stack.push(Math.sqrt(a)); break;
+                    case 'abs': stack.push(Math.abs(a)); break;
+                    case 'ln': stack.push(Math.log(a)); break;
+                    case 'log': stack.push(Math.log10(a)); break;
+                    case 'sin': stack.push(Math.sin(convertAngle(a))); break;
+                    case 'cos': stack.push(Math.cos(convertAngle(a))); break;
+                    case 'tan': stack.push(Math.tan(convertAngle(a))); break;
+                    case 'asin': stack.push(Math.asin(a)); break;
+                    case 'acos': stack.push(Math.acos(a)); break;
+                    case 'atan': stack.push(Math.atan(a)); break;
+                    case 'sinh': stack.push(Math.sinh(a)); break;
+                    case 'cosh': stack.push(Math.cosh(a)); break;
+                    case 'tanh': stack.push(Math.tanh(a)); break;
+                    case 'asinh': stack.push(Math.asinh(a)); break;
+                    case 'acosh': stack.push(Math.acosh(a)); break;
+                    case 'atanh': stack.push(Math.atanh(a)); break;
+                }
+            } else if (token.type === 'BinaryOperator') {
+                const b = stack.pop()!; // Pop right operand first
+                const a = stack.pop()!; // Pop left operand second
+
+                switch (token.value) {
+                    case '+': stack.push(a + b); break;
+                    case '-': stack.push(a - b); break;
+                    case '×': stack.push(a * b); break;
+                    case '÷': stack.push(a / b); break;
+                    case '^': stack.push(Math.pow(a, b)); break;
+                    case 'mod': stack.push(a % b); break;
+                    case 'P': stack.push(factorial(Math.round(a)) / factorial(Math.round(a - b))); break;
+                    case 'C': stack.push(factorial(Math.round(a)) / (factorial(Math.round(b)) * factorial(Math.round(a - b)))); break;
+                }
+            }
+        }
+
+        return stack[0];
+    };
+
+    let expression = getInput();
+
+    if (!expression) return;
+
+    let output: string = '';
+
+    try {
+        const tokens: Token[] = tokenize(expression);
+        const postfixQueue: Token[] = parse(tokens);
+        const result: number = evaluate(postfixQueue);
+
+        if (result === Infinity) {
+            output = "∞"
+        }
+        else if (result === -Infinity) {
+            output = "-∞"
+        }
+        else if (isNaN(result)) {
+            output = "Error"
+        }
+        else {
+            // Sanitize floating point ghost errors (0.1 + 0.2)
+            output = parseFloat(result.toPrecision(15)).toString();
+
+            // Trigger the continuous calculation state
+            isCalculated = true;
+            lastResult = output;
+        }
+    } catch (error) {
+        console.error("Error", error);
+        output = "Error";
+    }
+
+    outputResult.innerText = output;
+};
+
 // --- Event Listeners ---
 btnClear.addEventListener('click', handleClearClick);
 btnBackspace.addEventListener('click', handleBackspaceClick);
@@ -481,6 +853,7 @@ btnParenthesis.addEventListener('click', handleParenthesisClick);
 btnPercentage.addEventListener('click', handlePercentageClick);
 btnReciprocal.addEventListener('click', handleReciprocalClick);
 btnSwitchSign.addEventListener('click', handleSwitchSignClick);
+btnEquals.addEventListener('click', handleCalculate);
 
 // Attach click event listeners to the number buttons
 const numBtnMap: Record<string, string> = {
@@ -554,7 +927,6 @@ Object.keys(constantBtnMap).forEach(id => {
     });
 });
 
-
 // Attach click event listeners to the mod, nPr, and nCr buttons
 const combinatoricsBtnMap: Record<string, string> = {
     'btn-mod': 'mod',
@@ -567,3 +939,4 @@ Object.keys(combinatoricsBtnMap).forEach(id => {
         handleCombinatoricsClick(combinatoricsBtnMap[id]);
     });
 });
+
