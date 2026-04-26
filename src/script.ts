@@ -656,15 +656,97 @@ const handleCalculate = (): void => {
 
         return postfixQueue;
     };
+    const evaluate = (postfixTokens: Token[]): number => {
+        // Factorial helper function
+        const factorial = (n: number): number => {
+            if (n < 0) return NaN; // TODO: implement gamma function for negative integers
+            if (n === 0 || n === 1) return 1;
+
+            let res = 1;
+            for (let i = 2; i <= n; i++) {
+                res *= i;
+            }
+
+            return res;
+        };
+
+        const stack: number[] = [];
+
+        // Angle converter for Trig Functions
+        const convertAngle = (val: number): number => {
+            if (angleType === 'deg') return val * (Math.PI / 180);
+            if (angleType === 'grad') return val * (Math.PI / 200);
+            return val; // rad
+        };
+
+        for (const token of postfixTokens) {
+            if (token.type === 'Number') {
+                stack.push(parseFloat(token.value));
+            } else if (token.type === 'Constant') {
+                switch (token.value) {
+                    case 'π': stack.push(Math.PI); break;
+                    case 'e': stack.push(Math.E); break;
+                }
+            } else if (token.type === 'UnaryMinus') {
+                const a = stack.pop()!;
+                stack.push(-a);
+            } else if (token.type === 'PostfixUnary') {
+                const a = stack.pop()!;
+
+                if (token.value === '!')
+                    stack.push(factorial(Math.round(a)));
+                if (token.value === '%')
+                    stack.push(a / 100);
+            } else if (token.type === 'PrefixUnary') {
+                const a = stack.pop()!;
+
+                switch (token.value) {
+                    case '√': stack.push(Math.sqrt(a)); break;
+                    case 'abs': stack.push(Math.abs(a)); break;
+                    case 'ln': stack.push(Math.log(a)); break;
+                    case 'log': stack.push(Math.log10(a)); break;
+                    case 'sin': stack.push(Math.sin(convertAngle(a))); break;
+                    case 'cos': stack.push(Math.cos(convertAngle(a))); break;
+                    case 'tan': stack.push(Math.tan(convertAngle(a))); break;
+                    case 'asin': stack.push(Math.asin(a)); break;
+                    case 'acos': stack.push(Math.acos(a)); break;
+                    case 'atan': stack.push(Math.atan(a)); break;
+                    case 'sinh': stack.push(Math.sinh(a)); break;
+                    case 'cosh': stack.push(Math.cosh(a)); break;
+                    case 'tanh': stack.push(Math.tanh(a)); break;
+                    case 'asinh': stack.push(Math.asinh(a)); break;
+                    case 'acosh': stack.push(Math.acosh(a)); break;
+                    case 'atanh': stack.push(Math.atanh(a)); break;
+                }
+            } else if (token.type === 'BinaryOperator') {
+                const b = stack.pop()!; // Pop right operand first
+                const a = stack.pop()!; // Pop left operand second
+
+                switch (token.value) {
+                    case '+': stack.push(a + b); break;
+                    case '-': stack.push(a - b); break;
+                    case '×': stack.push(a * b); break;
+                    case '÷': stack.push(a / b); break;
+                    case '^': stack.push(Math.pow(a, b)); break;
+                    case 'mod': stack.push(a % b); break;
+                    case 'P': stack.push(factorial(Math.round(a)) / factorial(Math.round(a - b))); break;
+                    case 'C': stack.push(factorial(Math.round(a)) / (factorial(Math.round(b)) * factorial(Math.round(a - b)))); break;
+                }
+            }
+        }
+
+        return stack[0];
+    };
 
     let expression = getInput();
 
     if (!expression) return;
 
     const tokens: Token[] = tokenize(expression);
-    const postfixQueue: Token[] = parse(tokens)
+    const postfixQueue: Token[] = parse(tokens);
+    const result: number = evaluate(postfixQueue);
 
-    outputResult.innerText = "123";
+    outputResult.innerText = result.toString();
 };
 
 // --- Event Listeners ---
