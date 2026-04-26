@@ -742,11 +742,32 @@ const handleCalculate = (): void => {
 
     if (!expression) return;
 
-    const tokens: Token[] = tokenize(expression);
-    const postfixQueue: Token[] = parse(tokens);
-    const result: number = evaluate(postfixQueue);
+    let output: string = '';
 
-    outputResult.innerText = result.toString();
+    try {
+        const tokens: Token[] = tokenize(expression);
+        const postfixQueue: Token[] = parse(tokens);
+        const result: number = evaluate(postfixQueue);
+
+        if (result === Infinity) {
+            output = "∞"
+        }
+        else if (result === -Infinity) {
+            output = "-∞"
+        }
+        else if (isNaN(result)) {
+            output = "Error"
+        }
+        else {
+            // Sanitize floating point ghost errors (0.1 + 0.2)
+            output = parseFloat(result.toPrecision(15)).toString();
+        }
+    } catch (error) {
+        console.error("Error", error);
+        output = "Error";
+    }
+
+    outputResult.innerText = output;
 };
 
 // --- Event Listeners ---
