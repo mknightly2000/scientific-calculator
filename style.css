@@ -27,12 +27,23 @@ body {
     min-height: 100vh;
 }
 
+.main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+}
+
 .calculator {
     padding: 15px;
     background-color: var(--bg-calc);
     border-radius: 35px;
     border: 1px solid var(--btn-border);
     box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
 /* --- Output Area --- */
@@ -103,7 +114,7 @@ body {
     font-size: 16px;
     user-select: none;
     cursor: pointer;
-    transition: all 0.1s ease-out;
+    transition: background-color 0.1s ease-out, transform 0.1s ease-out, box-shadow 0.1s ease-out;
     box-shadow: var(--shadow-light);
     outline: none;
 }
@@ -143,4 +154,66 @@ body {
 
 .hidden {
     display: none;
+}
+
+
+/* --- Responsive Design --- */
+
+/* Trigger: When gap drops below 30px (Width < 640px OR Height < 500px) */
+@media (max-width: 700px), (max-height: 500px) {
+    body {
+        overflow: auto; /* Prevents scrollbars when flush */
+        background-color: var(--bg-calc);
+    }
+
+    /* 1. Snap to fill the edges completely */
+    .calculator {
+        width: 100vw;
+        max-width: 700px;
+        height: 100vh;
+        border-radius: 0; /* Removes rounded corners to sit flush */
+        border: none;
+        padding: 20px 15px;
+        justify-content: space-between;
+        box-shadow: none;
+    }
+
+    /* 2. Fluid Layout */
+    .output {
+        flex-grow: 1; /* Pushes the keyboard down */
+        justify-content: flex-end;
+        margin-bottom: 10px;
+    }
+
+    .keyboard {
+        flex-grow: 4; /* Gives keyboard the majority of the screen */
+        grid-template-rows: repeat(5, 1fr); /* Forces 5 equal, stretchy rows */
+        gap: 10px; /* Shrinks the grid gaps slightly on tiny screens */
+        max-height: 40vh; /* Protects the output area from being crushed */
+    }
+
+    /* 3. Shrink buttons and fonts safely */
+    .btn {
+        width: 100%;
+        height: 100%; /* Stretches dynamically to fill the grid */
+        font-size: clamp(13px, 3vw, 20px); /* Fluid font with a 13px minimum */
+        border-radius: clamp(10px, 4vw, 25px); /* Scales the button rounding */
+    }
+
+    .btn.operator, .btn.equals, .font-weight-bold {
+        font-size: clamp(14px, 3.5vw, 22px);
+    }
+
+    #output-operation-input {
+        font-size: clamp(24px, 6vw, 35px);
+    }
+
+    .output-result {
+        font-size: clamp(28px, 7vw, 35px);
+    }
+
+    .sup-text {
+        font-size: clamp(7px, 1.5vw, 10px);
+        top: -0.5em;
+    }
 }
