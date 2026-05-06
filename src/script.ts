@@ -839,7 +839,10 @@ const handleCalculate = (): void => {
         }
         else {
             // Sanitize floating point ghost errors (0.1 + 0.2)
-            output = parseFloat(result.toPrecision(15)).toString();
+            const rawOutput = parseFloat(result.toPrecision(15)).toString();
+
+            // Format the final output with commas
+            output = formatExpression(rawOutput);
 
             // Trigger the continuous calculation state
             isCalculated = true;
