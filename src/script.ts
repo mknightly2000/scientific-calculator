@@ -69,8 +69,19 @@ const getLastChar = () => {
     const val = getInput();
     return val[val.length - 1];
 };
+const formatExpression = (expr: string): string => {
+    // Strip existing commas to prevent double-formatting
+    const cleanExpr = expr.replace(/,/g, '');
+
+    // Find all numbers (integers and decimals) and add commas only to the integer part
+    return cleanExpr.replace(/\d+\.?\d*/g, (match) => {
+        const parts = match.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+    });
+};
 const setInput = (newVal: string) => {
-    inputTextArea.value = newVal;
+    inputTextArea.value = formatExpression(newVal);
     inputTextArea.scrollLeft = inputTextArea.scrollWidth;
 };
 const appendStringToInput = (str: string): void => {
@@ -266,7 +277,7 @@ const handleDecimalClick = (): void => {
 
             if (char === '.') {
                 return; // Decimal already exists in the current number
-            } else if (!isDigit(char)) {
+            } else if (!(isDigit(char) || char === ",")) {
                 break; // Reached an operator, meaning we are safe to add a decimal
             }
         }
@@ -808,6 +819,7 @@ const handleCalculate = (): void => {
     let expression = getInput();
 
     if (!expression) return;
+    expression = expression.replace(/,/g, '');  // remove commas
 
     let output: string = '';
 
